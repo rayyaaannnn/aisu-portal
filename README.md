@@ -68,7 +68,7 @@ Each role is redirected to its own dashboard after login.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/aisu-portal.git
+git clone https://github.com/rayyaaannnn/aisu-portal.git
 cd aisu_portal
 ```
 
