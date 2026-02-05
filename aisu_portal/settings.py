@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-%2tb5-u#llm2vbv9@h7y*b8+h-1&v^=97l=sj)*ztu^2j85^&*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["aisu-portal.onrender.com", "127.0.0.1", "localhost"]
+
 
 
 # Application definition
