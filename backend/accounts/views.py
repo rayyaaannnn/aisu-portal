@@ -1,11 +1,9 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Profile
-from django.http import JsonResponse, HttpResponseForbidden
 from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
 
@@ -13,29 +11,22 @@ from django.views.decorators.csrf import csrf_exempt
 def role_required(role_name):
     """
     Decorator that checks if the logged-in user has the required role.
-    
-    Args:
-        role_name (str): The required role (e.g., 'super_admin', 'it_team', 
-                        'state_team', 'district_team')
-    
-    Returns:
-        HttpResponseForbidden: If user doesn't have the required role
+    Returns JSON response for API requests.
     """
     def decorator(view_func):
         def wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
-                return redirect('login')
+                return JsonResponse({'error': 'Authentication required'}, status=401)
             
             try:
                 profile = Profile.objects.get(user=request.user)
                 if profile.role != role_name:
-                    return HttpResponseForbidden(
-                        f"Access denied. You must have the '{role_name}' role to access this page."
+                    return JsonResponse(
+                        {'error': f"Access denied. You must have the '{role_name}' role."},
+                        status=403
                     )
             except Profile.DoesNotExist:
-                return HttpResponseForbidden(
-                    "Access denied. No profile found for this user."
-                )
+                return JsonResponse({'error': 'Access denied. No profile found.'}, status=403)
             
             return view_func(request, *args, **kwargs)
         return wrapper
@@ -43,212 +34,322 @@ def role_required(role_name):
 
 
 @login_required
-def super_admin_dashboard(request):
-    return render(request, 'accounts/super_admin.html')
-
-@login_required
-def it_dashboard(request):
-    return render(request, 'accounts/it_dashboard.html')
-
-@login_required
-def state_dashboard(request):
-    return render(request, 'accounts/state_dashboard.html')
-
-@login_required
-def district_dashboard(request):
-    return render(request, 'accounts/district_dashboard.html')
-
-
-@login_required
+@require_http_methods(["GET"])
 def dashboard_counts(request):
-    # Return simple counts used by dashboards
+    """Return dashboard statistics as JSON."""
+    try:
+        profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        return JsonResponse({'error': 'Profile not found'}, status=404)
+    
+    # Get counts based on user role
     total_users = User.objects.count()
     total_states = Profile.objects.exclude(state__isnull=True).exclude(state__exact='').values('state').distinct().count()
     total_districts = Profile.objects.exclude(district__isnull=True).exclude(district__exact='').values('district').distinct().count()
-
+    
+    user_role = profile.role
+    
     data = {
         'total_users': total_users,
         'total_states': total_states,
         'total_districts': total_districts,
+        'user_role': user_role,
     }
     return JsonResponse(data)
 
 
 @login_required
-def profile_view(request):
+@require_http_methods(["GET"])
+def my_profile(request):
+    """Get current user's profile as JSON."""
     try:
         profile = Profile.objects.get(user=request.user)
     except Profile.DoesNotExist:
-        # create a basic profile if missing
-        profile = Profile.objects.create(user=request.user, role='district_team')
-
-    message = None
-    if request.method == 'POST':
-        # update user fields
-        first_name = request.POST.get('first_name', '').strip()
-        last_name = request.POST.get('last_name', '').strip()
-        email = request.POST.get('email', '').strip()
-        # update profile fields
-        state = request.POST.get('state') or None
-        district = request.POST.get('district') or None
-        phone = request.POST.get('phone', '').strip() or None
-        photo_url = request.POST.get('photo_url', '').strip() or None
-
-        request.user.first_name = first_name
-        request.user.last_name = last_name
-        request.user.email = email
-        request.user.save()
-
-        profile.state = state
-        profile.district = district
-        profile.phone = phone
-        profile.photo_url = photo_url
-        profile.save()
-
-        message = 'Profile updated successfully.'
-
-    context = {
-        'profile': profile,
-        'message': message,
-    }
-    return render(request, 'accounts/profile.html', context)
-
-@csrf_protect
-@require_http_methods(["GET", "POST"])
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
-            return redirect('role_redirect')
-        else:
-            error = 'Invalid username or password'
-            return render(request, 'accounts/login.html', {'error': error})
+        return JsonResponse({'error': 'Profile not found'}, status=404)
     
-    context = {}
-    return render(request, 'accounts/login.html', context)
+    user = request.user
+    data = {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'role': profile.role,
+        'state': profile.state,
+        'district': profile.district,
+        'phone': profile.phone,
+        'photo_url': profile.photo_url,
+    }
+    return JsonResponse(data)
 
 
 @login_required
-def role_redirect(request):
+@require_http_methods(["PUT"])
+def update_profile(request):
+    """Update current user's profile."""
     try:
         profile = Profile.objects.get(user=request.user)
-
-        if profile.role == 'super_admin':
-            return redirect('super_admin')
-        elif profile.role == 'it_team':
-            return redirect('it_dashboard')
-        elif profile.role == 'state_team':
-            return redirect('state_dashboard')
-        elif profile.role == 'district_team':
-            return redirect('district_dashboard')
     except Profile.DoesNotExist:
-        return redirect('login')
+        return JsonResponse({'error': 'Profile not found'}, status=404)
+    
+    import json
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    user = request.user
+    
+    # Update user fields
+    if 'first_name' in data:
+        user.first_name = data['first_name']
+    if 'last_name' in data:
+        user.last_name = data['last_name']
+    if 'email' in data:
+        user.email = data['email']
+    user.save()
+    
+    # Update profile fields
+    if 'state' in data:
+        profile.state = data['state']
+    if 'district' in data:
+        profile.district = data['district']
+    if 'phone' in data:
+        profile.phone = data['phone']
+    if 'photo_url' in data:
+        profile.photo_url = data['photo_url']
+    profile.save()
+    
+    return JsonResponse({'message': 'Profile updated successfully'})
 
 
 @login_required
-def logout_view(request):
-    logout(request)
-    return redirect('login')
-
-
-@login_required
+@require_http_methods(["GET"])
 def manage_users(request):
-    # Only super admins can manage users
+    """List all users (super_admin only)."""
     try:
         profile = Profile.objects.get(user=request.user)
         if profile.role != 'super_admin':
-            return redirect('role_redirect')
+            return JsonResponse({'error': 'Access denied. Super admin only.'}, status=403)
     except Profile.DoesNotExist:
-        return redirect('login')
+        return JsonResponse({'error': 'Profile not found'}, status=404)
     
     users = User.objects.all().prefetch_related('profile')
-    context = {'users': users}
-    return render(request, 'accounts/manage_users.html', context)
+    users_data = []
+    for user in users:
+        try:
+            user_profile = user.profile
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user_profile.role,
+                'state': user_profile.state,
+                'district': user_profile.district,
+            })
+        except Profile.DoesNotExist:
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': None,
+                'state': None,
+                'district': None,
+            })
+    
+    return JsonResponse({'users': users_data})
 
 
 @login_required
+@require_http_methods(["POST"])
 def add_user(request):
-    # Only super admins can add users
+    """Create a new user (super_admin only)."""
+    import json
+    
     try:
         profile = Profile.objects.get(user=request.user)
         if profile.role != 'super_admin':
-            return redirect('role_redirect')
+            return JsonResponse({'error': 'Access denied. Super admin only.'}, status=403)
     except Profile.DoesNotExist:
-        return redirect('login')
+        return JsonResponse({'error': 'Profile not found'}, status=404)
     
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        role = request.POST.get('role')
-        
-        if User.objects.filter(username=username).exists():
-            context = {'error': 'Username already exists'}
-            return render(request, 'accounts/add_user.html', context)
-        
-        # Create user
-        user = User.objects.create_user(username=username, email=email, password=password)
-        
-        # Create profile
-        Profile.objects.create(user=user, role=role)
-        
-        return redirect('manage_users')
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
     
-    context = {}
-    return render(request, 'accounts/add_user.html', context)
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role')
+    
+    if not all([username, email, password, role]):
+        return JsonResponse({'error': 'Missing required fields'}, status=400)
+    
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({'error': 'Username already exists'}, status=400)
+    
+    # Create user
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password
+    )
+    
+    # Create profile
+    Profile.objects.create(
+        user=user,
+        role=role,
+        state=data.get('state'),
+        district=data.get('district'),
+    )
+    
+    return JsonResponse({
+        'message': 'User created successfully',
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'role': role,
+        }
+    })
 
 
 @login_required
+@require_http_methods(["PUT"])
 def edit_user(request, user_id):
-    # Only super admins can edit users
+    """Edit an existing user (super_admin only)."""
+    import json
+    
     try:
         profile = Profile.objects.get(user=request.user)
         if profile.role != 'super_admin':
-            return redirect('role_redirect')
+            return JsonResponse({'error': 'Access denied. Super admin only.'}, status=403)
     except Profile.DoesNotExist:
-        return redirect('login')
+        return JsonResponse({'error': 'Profile not found'}, status=404)
     
-    user = get_object_or_404(User, id=user_id)
-    user_profile = get_object_or_404(Profile, user=user)
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
     
-    if request.method == 'POST':
-        user.email = request.POST.get('email')
-        user_profile.role = request.POST.get('role')
-        user_profile.state = request.POST.get('state') or None
-        user_profile.district = request.POST.get('district') or None
-        
-        user.save()
-        user_profile.save()
-        
-        return redirect('manage_users')
+    try:
+        user_profile = Profile.objects.get(user=user)
+    except Profile.DoesNotExist:
+        user_profile = Profile.objects.create(user=user, role='district_team')
     
-    context = {'user': user, 'profile': user_profile}
-    return render(request, 'accounts/edit_user.html', context)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    # Update user fields
+    if 'email' in data:
+        user.email = data['email']
+    user.save()
+    
+    # Update profile fields
+    if 'role' in data:
+        user_profile.role = data['role']
+    if 'state' in data:
+        user_profile.state = data['state']
+    if 'district' in data:
+        user_profile.district = data['district']
+    user_profile.save()
+    
+    return JsonResponse({'message': 'User updated successfully'})
 
 
 @login_required
+@require_http_methods(["DELETE"])
 def delete_user(request, user_id):
-    # Only super admins can delete users
+    """Delete a user (super_admin only)."""
     try:
         profile = Profile.objects.get(user=request.user)
         if profile.role != 'super_admin':
-            return redirect('role_redirect')
+            return JsonResponse({'error': 'Access denied. Super admin only.'}, status=403)
     except Profile.DoesNotExist:
-        return redirect('login')
+        return JsonResponse({'error': 'Profile not found'}, status=404)
     
-    user = get_object_or_404(User, id=user_id)
-    # prevent super-admin from deleting themselves
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    
+    # Prevent deleting yourself
     if user == request.user:
-        context = {'user': user, 'error': 'You cannot delete your own account.'}
-        return render(request, 'accounts/confirm_delete.html', context)
+        return JsonResponse({'error': 'You cannot delete your own account'}, status=400)
+    
+    user.delete()
+    return JsonResponse({'message': 'User deleted successfully'})
 
-    if request.method == 'POST':
-        user.delete()
-        return redirect('manage_users')
 
-    context = {'user': user}
-    return render(request, 'accounts/confirm_delete.html', context)
+@require_http_methods(["POST"])
+def api_login(request):
+    """API login - returns user info for React frontend."""
+    import json
+    
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return JsonResponse({'error': 'Username and password required'}, status=400)
+    
+    user = authenticate(request, username=username, password=password)
+    
+    if user is None:
+        return JsonResponse({'error': 'Invalid credentials'}, status=401)
+    
+    login(request, user)
+    
+    try:
+        profile = Profile.objects.get(user=user)
+        role = profile.role
+    except Profile.DoesNotExist:
+        role = 'unknown'
+    
+    return JsonResponse({
+        'message': 'Login successful',
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': role,
+        }
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_logout(request):
+    """API logout."""
+    logout(request)
+    return JsonResponse({'message': 'Logged out successfully'})
+
+
+@login_required
+@require_http_methods(["GET"])
+def role_redirect(request):
+    """Return role-based redirect info."""
+    try:
+        profile = Profile.objects.get(user=request.user)
+        role = profile.role
+    except Profile.DoesNotExist:
+        role = 'unknown'
+    
+    return JsonResponse({
+        'role': role,
+        'redirect_url': f'/{role.replace("_", "-")}'
+    })
+

@@ -1,47 +1,21 @@
-# TODO: Project Reorganization - Separate Backend and Frontend
+# TODO: Clean Backend - API Only Setup
 
-## Completed - Folder Structure
-- [x] 1. Create `backend/` folder for Django project
-- [x] 2. Move backend files to backend/:
-  - aisu_portal/
-  - accounts/
-  - manage.py
-  - db.sqlite3
-  - requirements.txt
-  - README.md
-- [x] 3. Keep frontend/ as is (React/Vite)
+## Step 1: Remove Django Templates
+- [ ] 1. Remove `backend/accounts/templates/` folder (no longer needed)
 
-## New Project Structure
-```
-aisu-portal/
-├── backend/          # Django REST API + Templates
-│   ├── aisu_portal/  # Django settings, urls, wsgi
-│   ├── accounts/     # Django app (models, views, templates)
-│   ├── manage.py
-│   ├── db.sqlite3
-│   └── requirements.txt
-└── frontend/         # React/Vite SPA
-    ├── src/          # React components
-    ├── public/
-    ├── package.json
-    └── vite.config.js
-```
+## Step 2: Clean Views
+- [ ] 2. Remove template-based views from `backend/accounts/views.py`
+  - Keep: `login_view`, `logout_view`, `role_redirect` (for JWT)
+  - Remove: All `render()` calls for templates (super_admin_dashboard, it_dashboard, state_dashboard, etc.)
 
-## Running the Project
+## Step 3: Clean URLs
+- [ ] 3. Remove template-based URLs from `backend/accounts/urls.py`
+  - Keep: JWT endpoints, API endpoints
+  - Remove: Dashboard URLs (handled by React)
 
-### Backend (Terminal 1):
-```bash
-cd backend
-python manage.py runserver 8000
-```
+## Step 4: Clean Main URLs
+- [ ] 4. Remove React catch-all route from `backend/aisu_portal/urls.py`
 
-### Frontend (Terminal 2):
-```bash
-cd frontend
-npm run dev
-```
-
-## Next Steps - Building Inside Pages
-- Design dashboard views for each role
-- Connect React components to Django REST API
-- Implement role-based access control
+## Step 5: Verify
+- [ ] 5. Test Django API still works: `python manage.py runserver`
+- [ ] 6. Test React login still works: `npm run dev`
