@@ -1,7 +1,19 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
+from .api_views import DesignationViewSet, UserInfoView
+
+# Create router for viewsets
+router = DefaultRouter()
+router.register(r'designations', DesignationViewSet, basename='designation')
 
 urlpatterns = [
+    # API endpoints for Designation
+    path('', include(router.urls)),
+    
+    # API endpoint for user info (role-based redirects)
+    path('user-info/', UserInfoView.as_view(), name='user_info'),
+    
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('redirect/', views.role_redirect, name='role_redirect'),
@@ -11,7 +23,7 @@ urlpatterns = [
     path('district/', views.district_dashboard, name='district_dashboard'),
     path('dashboard-counts/', views.dashboard_counts, name='dashboard_counts'),
     path('users/', views.manage_users, name='manage_users'),
-        path('profile/', views.profile_view, name='profile'),
+    path('profile/', views.profile_view, name='profile'),
     path('users/add/', views.add_user, name='add_user'),
     path('users/<int:user_id>/edit/', views.edit_user, name='edit_user'),
     path('users/<int:user_id>/delete/', views.delete_user, name='delete_user'),

@@ -5,9 +5,41 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_http_methods
 from .models import Profile
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
+
+
+def role_required(role_name):
+    """
+    Decorator that checks if the logged-in user has the required role.
+    
+    Args:
+        role_name (str): The required role (e.g., 'super_admin', 'it_team', 
+                        'state_team', 'district_team')
+    
+    Returns:
+        HttpResponseForbidden: If user doesn't have the required role
+    """
+    def decorator(view_func):
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return redirect('login')
+            
+            try:
+                profile = Profile.objects.get(user=request.user)
+                if profile.role != role_name:
+                    return HttpResponseForbidden(
+                        f"Access denied. You must have the '{role_name}' role to access this page."
+                    )
+            except Profile.DoesNotExist:
+                return HttpResponseForbidden(
+                    "Access denied. No profile found for this user."
+                )
+            
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 @login_required
