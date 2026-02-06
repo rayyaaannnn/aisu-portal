@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Login';
 import RoleBasedDashboard from './RoleBasedDashboard';
 import DesignationsList from './DesignationsList';
+import UserManagement from './UserManagement';
+import Profile from './Profile';
 import PrivateRoute from './PrivateRoute';
 
 function App() {
@@ -18,10 +20,26 @@ function App() {
         }
       />
       <Route
+        path="/users"
+        element={
+          <PrivateRoute>
+            <UserManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="/designations"
         element={
           <PrivateRoute>
             <DesignationsList />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <Profile />
           </PrivateRoute>
         }
       />
