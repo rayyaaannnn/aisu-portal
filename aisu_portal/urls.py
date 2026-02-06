@@ -1,15 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.shortcuts import redirect   # ADD THIS
-
-from members import views               # ADD THIS if not present
+from django.shortcuts import redirect
 
 urlpatterns = [
-    path('', lambda request: redirect('/admin/')),  # homepage
+    path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
-
-    path('super-admin/', views.super_admin_dashboard, name='super_admin'),
-    path('it/', views.it_dashboard, name='it_dashboard'),
-    path('state/', views.state_dashboard, name='state_dashboard'),
-    path('district/', views.district_dashboard, name='district_dashboard'),
+    path('', lambda request: redirect('/accounts/login/')),  # homepage redirects to login
 ]
