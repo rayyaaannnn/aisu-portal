@@ -99,7 +99,7 @@ function Login() {
 
         <div className="login-body">
           <div className="login-header-section">
-            <h2>Welcome Back</h2>
+            <h2>Welcome to AISU Sign in Page</h2>
             <p>Sign in to access your dashboard</p>
           </div>
 

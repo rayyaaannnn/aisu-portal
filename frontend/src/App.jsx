@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Login from './Login';
+import Login from './Login.jsx';
 import RoleBasedDashboard from './RoleBasedDashboard';
 import DesignationsList from './DesignationsList';
 import UserManagement from './UserManagement';
