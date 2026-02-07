@@ -25,8 +25,8 @@ function DashboardLayout({ children, user }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-      <Navigation user={user} isOpen={isSidebarOpen} />
+    <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <Navigation user={user} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
       <main className="main-content">
         <header className="global-header">
@@ -133,30 +133,111 @@ function NotificationBadge({ count }) {
 export function AdminDashboard({ user }) {
   const [counts, setCounts] = useState({ total_users: 0, total_states: 0, total_districts: 0 });
   const [recentUsers, setRecentUsers] = useState([]);
-  const [activities, setActivities] = useState([
-    { icon: '👤', title: 'New Member Registered', description: 'John Doe joined the union', time: '2 hours ago', color: '#4caf50' },
-    { icon: '🔄', title: 'Role Updated', description: 'Jane Smith promoted to State Lead', time: '5 hours ago', color: '#2196f3' },
-    { icon: '📊', title: 'New Region Added', description: 'New district "XYZ" created', time: '1 day ago', color: '#ff9800' },
-    { icon: '🎓', title: 'Event Update', description: 'Annual meeting scheduled', time: '2 days ago', color: '#f44336' },
-  ]);
+  const [activities, setActivities] = useState([]);
+  const [systemStatus, setSystemStatus] = useState({
+    server: 'unknown',
+    database: 'unknown',
+    email: 'unknown',
+    checked_at: null,
+  });
   const logout = useLogout();
 
   useEffect(() => {
-    fetch('/accounts/dashboard-counts/')
-      .then(response => response.json())
+    const token = localStorage.getItem('accessToken');
+
+    fetch('/accounts/dashboard-counts/', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include',
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to load dashboard counts');
+        return response.json();
+      })
       .then(data => setCounts(data))
       .catch(console.error);
-    
-    // Simulated recent users data
-    setRecentUsers([
-      { id: 1, username: 'john_doe', role: 'district_team', state: 'Maharashtra' },
-      { id: 2, username: 'jane_smith', role: 'state_team', state: 'Karnataka' },
-      { id: 3, username: 'mike_wilson', role: 'district_team', state: 'Tamil Nadu' },
-    ]);
+
+    fetch('/accounts/manage-users/', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include',
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to load users');
+        return response.json();
+      })
+      .then(data => {
+        const users = (data?.users || [])
+          .sort((a, b) => new Date(b.date_joined || 0) - new Date(a.date_joined || 0))
+          .slice(0, 5);
+        setRecentUsers(users);
+        const mappedActivities = users.map(u => ({
+          icon: '👤',
+          title: `${u.username} joined`,
+          description: `${formatRole(u.role || 'member')}${u.state ? ` • ${u.state}` : ''}`,
+          time: formatRelativeTime(u.date_joined),
+          color: '#4caf50',
+        }));
+        setActivities(mappedActivities);
+      })
+      .catch(err => {
+        console.error(err);
+        setRecentUsers([]);
+        setActivities([]);
+      });
+
+    fetch('/accounts/system-status/', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include',
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load system status');
+        return res.json();
+      })
+      .then(data => setSystemStatus(data))
+      .catch(err => {
+        console.error(err);
+        setSystemStatus({
+          server: 'error',
+          database: 'error',
+          email: 'error',
+          checked_at: null,
+        });
+      });
   }, []);
 
   const formatRole = (role) => {
     return role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const formatRelativeTime = (isoString) => {
+    if (!isoString) return 'Just now';
+    const date = new Date(isoString);
+    const diff = Date.now() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const statusLabel = (status) => {
+    switch (status) {
+      case 'online': return 'Online';
+      case 'error': return 'Issue';
+      case 'not_configured': return 'Not Configured';
+      default: return 'Unknown';
+    }
+  };
+
+  const statusClass = (status) => {
+    switch (status) {
+      case 'online': return 'online';
+      case 'not_configured': return 'warning';
+      case 'error': return 'error';
+      default: return 'warning';
+    }
   };
 
   return (
@@ -297,33 +378,47 @@ export function AdminDashboard({ user }) {
                 <div className="health-icon">🖥️</div>
                 <div className="health-info">
                   <h4>Server Status</h4>
-                  <span className="health-status online">● Online</span>
+                  <span className={`health-status ${statusClass(systemStatus.server)}`}>
+                    ● {statusLabel(systemStatus.server)}
+                  </span>
                 </div>
-                <div className="health-value">99.9%</div>
+                <div className="health-value">{systemStatus.server === 'online' ? 'OK' : 'Check'}</div>
               </div>
               <div className="health-card">
                 <div className="health-icon">💾</div>
                 <div className="health-info">
                   <h4>Database</h4>
-                  <span className="health-status online">● Connected</span>
+                  <span className={`health-status ${statusClass(systemStatus.database)}`}>
+                    ● {statusLabel(systemStatus.database)}
+                  </span>
                 </div>
-                <div className="health-value">45%</div>
-              </div>
-              <div className="health-card">
-                <div className="health-icon">🔒</div>
-                <div className="health-info">
-                  <h4>Security</h4>
-                  <span className="health-status online">● Protected</span>
-                </div>
-                <div className="health-value">A+</div>
+                <div className="health-value">{systemStatus.database === 'online' ? 'Connected' : 'Check'}</div>
               </div>
               <div className="health-card">
                 <div className="health-icon">📧</div>
                 <div className="health-info">
                   <h4>Email Service</h4>
-                  <span className="health-status online">● Active</span>
+                  <span className={`health-status ${statusClass(systemStatus.email)}`}>
+                    ● {statusLabel(systemStatus.email)}
+                  </span>
                 </div>
-                <div className="health-value">OK</div>
+                <div className="health-value">
+                  {systemStatus.email === 'online'
+                    ? 'Active'
+                    : systemStatus.email === 'not_configured'
+                      ? 'Configure'
+                      : 'Issue'}
+                </div>
+              </div>
+              <div className="health-card">
+                <div className="health-icon">⏱️</div>
+                <div className="health-info">
+                  <h4>Last Check</h4>
+                  <span className="health-status online">
+                    {systemStatus.checked_at ? new Date(systemStatus.checked_at).toLocaleTimeString() : '—'}
+                  </span>
+                </div>
+                <div className="health-value">Live</div>
               </div>
             </div>
           </section>

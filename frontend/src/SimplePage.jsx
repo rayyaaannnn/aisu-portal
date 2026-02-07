@@ -16,7 +16,7 @@ function SimplePage({ title, subtitle, children }) {
 
   return (
     <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-      <Navigation user={user} isOpen={isSidebarOpen} />
+      <Navigation user={user} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
       <main className="main-content">
         <header className="global-header">

@@ -6,12 +6,14 @@ from django.views.decorators.http import require_http_methods
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.mail import send_mail
+from django.core.mail import send_mail, get_connection
 from django.core.cache import cache
 from django.conf import settings
 from .models import Profile
 from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
+from django.db import connection
+from django.utils import timezone
 
 
 def role_required(role_name):
@@ -154,6 +156,7 @@ def manage_users(request):
                 'role': user_profile.role,
                 'state': user_profile.state,
                 'district': user_profile.district,
+                'date_joined': user.date_joined.isoformat() if user.date_joined else None,
             })
         except Profile.DoesNotExist:
             users_data.append({
@@ -165,9 +168,47 @@ def manage_users(request):
                 'role': None,
                 'state': None,
                 'district': None,
+                'date_joined': user.date_joined.isoformat() if user.date_joined else None,
             })
     
     return JsonResponse({'users': users_data})
+
+
+@login_required
+@require_http_methods(["GET"])
+def system_status(request):
+    """Return simple live health stats for the portal."""
+    server_status = 'online'
+
+    # Database check
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        db_status = 'online'
+    except Exception:
+        db_status = 'error'
+
+    # Email check (detect configuration; best-effort ping)
+    try:
+        conn = get_connection()
+        backend_path = f"{conn.__class__.__module__}.{conn.__class__.__name__}"
+        # Treat console and in-memory backends as not configured for real delivery
+        if 'console.EmailBackend' in backend_path or 'locmem.EmailBackend' in backend_path:
+            email_status = 'not_configured'
+        else:
+            conn.open()
+            email_status = 'online'
+            conn.close()
+    except Exception:
+        email_status = 'error'
+
+    data = {
+        'checked_at': timezone.now().isoformat(),
+        'server': server_status,
+        'database': db_status,
+        'email': email_status,
+    }
+    return JsonResponse(data)
 
 
 @login_required

@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import aisuLogo from './assets/aisu-logo.jpg';
 
-function Navigation({ user }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+function Navigation({ user, isOpen, setIsOpen }) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const isCollapsed = !isOpen;
   const location = useLocation();
   const resolvedUser = React.useMemo(() => {
     if (user && Object.keys(user).length > 0) return user;
@@ -77,12 +77,24 @@ function Navigation({ user }) {
     resolvedUser?.username?.[0] ||
     'U';
 
+  const sidebarClass = `sidebar ${isCollapsed ? 'collapsed' : ''}`;
+
   return (
-    <nav className="sidebar">
+    <nav className={sidebarClass}>
       <div className="sidebar-header">
         <a className="logo" href="/dashboard">
           <img src={aisuLogo} alt="AISU logo" />
+          {!isCollapsed && <span className="logo-text">AISU Portal</span>}
         </a>
+        {!isCollapsed && (
+          <button 
+            className="collapse-button"
+            onClick={() => setIsOpen?.(false)}
+            aria-label="Collapse sidebar"
+          >
+            ←
+          </button>
+        )}
       </div>
 
       <div className="sidebar-content">
@@ -121,6 +133,18 @@ function Navigation({ user }) {
             <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>
               <span className="nav-icon">✉️</span>
               {!isCollapsed && <span className="nav-label">Contact</span>}
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/terms" className={`nav-link ${location.pathname === '/terms' ? 'active' : ''}`}>
+              <span className="nav-icon">📜</span>
+              {!isCollapsed && <span className="nav-label">Terms</span>}
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/privacy" className={`nav-link ${location.pathname === '/privacy' ? 'active' : ''}`}>
+              <span className="nav-icon">🔒</span>
+              {!isCollapsed && <span className="nav-label">Privacy</span>}
             </Link>
           </li>
         </ul>

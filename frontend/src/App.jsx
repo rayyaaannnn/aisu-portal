@@ -14,6 +14,8 @@ import Settings from './Settings';
 import Help from './Help';
 import Contact from './Contact';
 import Districts from './Districts';
+import Terms from './Terms';
+import Privacy from './Privacy';
 
 function App() {
   return (
@@ -108,6 +110,8 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
       {/* Catch all route - redirect to login */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

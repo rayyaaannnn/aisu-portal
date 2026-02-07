@@ -25,6 +25,7 @@ urlpatterns = [
     
     # Dashboard endpoints
     path('dashboard-counts/', views.dashboard_counts, name='dashboard_counts'),
+    path('system-status/', views.system_status, name='system_status'),
     
     # Profile endpoints
     path('profile/', views.my_profile, name='my_profile'),
