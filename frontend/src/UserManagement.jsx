@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SimplePage from './SimplePage';
 
 /**
  * UserManagement - Component for Super Admin to manage users
@@ -43,7 +44,7 @@ function UserManagement() {
 
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
+        setUsers(data.users || data);
       } else if (response.status === 403) {
         setError('Access denied. Super admin privileges required.');
       } else {
@@ -67,6 +68,7 @@ function UserManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
       const token = localStorage.getItem('accessToken');
@@ -100,6 +102,8 @@ function UserManagement() {
       }
     } catch (err) {
       setError('Network error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,9 +113,9 @@ function UserManagement() {
       username: user.username,
       email: user.email,
       password: '', // Don't pre-fill password
-      role: user.profile?.role || 'district_team',
-      state: user.profile?.state || '',
-      district: user.profile?.district || ''
+      role: user.role || 'district_team',
+      state: user.state || '',
+      district: user.district || ''
     });
     setShowAddForm(true);
   };
@@ -162,149 +166,158 @@ function UserManagement() {
   }
 
   return (
-    <div className="user-management-container">
-      <header className="page-header">
-        <h1>User Management</h1>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="add-user-button"
-        >
-          Add New User
-        </button>
-      </header>
+    <SimplePage title="User Management" subtitle="Manage members and roles">
+      <div className="user-management-container">
+        <header className="page-header">
+          <h1>User Management</h1>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="add-user-button"
+          >
+            Add New User
+          </button>
+        </header>
 
-      {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message">{error}</div>}
 
-      {showAddForm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>{editingUser ? 'Edit User' : 'Add New User'}</h2>
-            <form onSubmit={handleSubmit} className="user-form">
-              <div className="form-group">
-                <label>Username:</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  required
-                  disabled={!!editingUser} // Can't change username when editing
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Email:</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-
-              {!editingUser && (
+        {showAddForm && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>{editingUser ? 'Edit User' : 'Add New User'}</h2>
+              <form onSubmit={handleSubmit} className="user-form">
                 <div className="form-group">
-                  <label>Password:</label>
+                  <label>Username:</label>
                   <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
+                    type="text"
+                    name="username"
+                    value={formData.username}
                     onChange={handleInputChange}
-                    required={!editingUser}
+                    required
+                    disabled={!!editingUser} // Can't change username when editing
                   />
                 </div>
-              )}
 
-              <div className="form-group">
-                <label>Role:</label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="district_team">District Team</option>
-                  <option value="state_team">State Team</option>
-                  <option value="it_team">IT Team</option>
-                  <option value="super_admin">Super Admin</option>
-                </select>
-              </div>
+                <div className="form-group">
+                  <label>Email:</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>State:</label>
-                <input
-                  type="text"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleInputChange}
-                />
-              </div>
+                {!editingUser && (
+                  <div className="form-group">
+                    <label>Password:</label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required={!editingUser}
+                    />
+                  </div>
+                )}
 
-              <div className="form-group">
-                <label>District:</label>
-                <input
-                  type="text"
-                  name="district"
-                  value={formData.district}
-                  onChange={handleInputChange}
-                />
-              </div>
+                <div className="form-group">
+                  <label>Role:</label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="district_team">District Team</option>
+                    <option value="state_team">State Team</option>
+                    <option value="it_team">IT Team</option>
+                    <option value="super_admin">Super Admin</option>
+                  </select>
+                </div>
 
-              <div className="form-actions">
-                <button type="submit" className="submit-button">
-                  {editingUser ? 'Update User' : 'Create User'}
-                </button>
-                <button type="button" onClick={cancelForm} className="cancel-button">
-                  Cancel
-                </button>
-              </div>
-            </form>
+                <div className="form-group">
+                  <label>State:</label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>District:</label>
+                  <input
+                    type="text"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="form-actions">
+                  <button type="submit" className="submit-button">
+                    {editingUser ? 'Update User' : 'Create User'}
+                  </button>
+                  <button type="button" onClick={cancelForm} className="cancel-button">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="users-table-container">
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>State</th>
-              <th>District</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user.id}>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>{user.profile?.role || 'N/A'}</td>
-                <td>{user.profile?.state || '-'}</td>
-                <td>{user.profile?.district || '-'}</td>
-                <td>
-                  <button
-                    onClick={() => handleEdit(user)}
-                    className="edit-button"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(user.id, user.username)}
-                    className="delete-button"
-                    disabled={user.username === localStorage.getItem('user')?.username}
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="users-table-container">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>State</th>
+                <th>District</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map(user => (
+                <tr key={user.id}>
+                  <td>{user.username}</td>
+                  <td>{user.email}</td>
+                  <td>{user.role || 'N/A'}</td>
+                  <td>{user.state || '-'}</td>
+                  <td>{user.district || '-'}</td>
+                  <td>
+                    <button
+                      onClick={() => handleEdit(user)}
+                      className="edit-button"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user.id, user.username)}
+                      className="delete-button"
+                      disabled={(() => {
+                        try {
+                          const stored = JSON.parse(localStorage.getItem('user'));
+                          return stored?.username === user.username;
+                        } catch {
+                          return false;
+                        }
+                      })()}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </SimplePage>
   );
 }
 

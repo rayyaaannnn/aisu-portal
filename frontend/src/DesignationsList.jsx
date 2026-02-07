@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './DesignationsList.css';
+import SimplePage from './SimplePage';
 
 /**
  * DesignationsList - Component that displays designations grouped by level
@@ -91,23 +92,28 @@ function DesignationsList() {
 
   if (loading) {
     return (
-      <div className="designations-container">
-        <div className="loading">Loading designations...</div>
-      </div>
+      <SimplePage title="Designations" subtitle="Organizational hierarchy">
+        <div className="designations-container">
+          <div className="loading">Loading designations...</div>
+        </div>
+      </SimplePage>
     );
   }
 
   if (error) {
     return (
-      <div className="designations-container">
-        <div className="error-message">Error: {error}</div>
-      </div>
+      <SimplePage title="Designations" subtitle="Organizational hierarchy">
+        <div className="designations-container">
+          <div className="error-message">Error: {error}</div>
+        </div>
+      </SimplePage>
     );
   }
 
   return (
-    <div className="designations-container">
-      <h1 className="designations-title">Organizational Designations</h1>
+    <SimplePage title="Designations" subtitle="Organizational hierarchy">
+      <div className="designations-container">
+        <h1 className="designations-title">Organizational Designations</h1>
       
       {LEVEL_ORDER.map((level) => {
         const levelDesignations = groupedDesignations[level] || [];
@@ -208,7 +214,8 @@ function DesignationsList() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </SimplePage>
   );
 }
 

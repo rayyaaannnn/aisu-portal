@@ -18,6 +18,10 @@ urlpatterns = [
     path('login/', views.api_login, name='api_login'),
     path('logout/', views.api_logout, name='api_logout'),
     path('redirect/', views.role_redirect, name='role_redirect'),
+
+    # Password reset (API-driven)
+    path('password-reset/', views.password_reset_request, name='password_reset_request'),
+    path('password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
     
     # Dashboard endpoints
     path('dashboard-counts/', views.dashboard_counts, name='dashboard_counts'),
@@ -32,4 +36,3 @@ urlpatterns = [
     path('users/<int:user_id>/edit/', views.edit_user, name='edit_user'),
     path('users/<int:user_id>/delete/', views.delete_user, name='delete_user'),
 ]
-

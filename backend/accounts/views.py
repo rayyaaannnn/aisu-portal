@@ -3,6 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
+from django.core.cache import cache
+from django.conf import settings
 from .models import Profile
 from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
@@ -338,6 +344,94 @@ def api_logout(request):
     return JsonResponse({'message': 'Logged out successfully'})
 
 
+def _rate_limit(key_prefix, limit=5, window=300):
+    """Simple in-memory/IP-based rate limit using cache."""
+    key = f"rl:{key_prefix}"
+    current = cache.get(key, 0)
+    if current >= limit:
+        return False
+    cache.incr(key, 1) if cache.get(key) else cache.set(key, 1, timeout=window)
+    return True
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def password_reset_request(request):
+    """Start password reset. Returns uid and token (dev) and should email in production."""
+    import json
+    if not _rate_limit(f"pwreset:{request.META.get('REMOTE_ADDR')}", limit=5, window=900):
+        return JsonResponse({'error': 'Too many attempts. Please wait and try again.'}, status=429)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    identifier = data.get('identifier')
+    if not identifier:
+        return JsonResponse({'error': 'Username or email required'}, status=400)
+
+    try:
+        user = User.objects.get(username=identifier)
+    except User.DoesNotExist:
+        user = User.objects.filter(email=identifier).first()
+
+    if not user:
+        # Do not reveal whether account exists
+        return JsonResponse({'message': 'If an account exists, a reset link has been sent.'})
+
+    token_gen = PasswordResetTokenGenerator()
+    token = token_gen.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+    # Send email (console backend in dev)
+    reset_link = f"{getattr(settings, 'FRONTEND_RESET_URL', 'http://localhost:3000/forgot')}?uid={uid}&token={token}"
+    send_mail(
+        subject="AISU password reset",
+        message=f"Use this link to reset your password: {reset_link}",
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@aisu.local'),
+        recipient_list=[user.email] if user.email else [],
+        fail_silently=True,
+    )
+
+    return JsonResponse({'message': 'If an account exists, a reset link has been sent.'})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def password_reset_confirm(request):
+    """Complete password reset using uid + token + new_password."""
+    import json
+    if not _rate_limit(f"pwreset-confirm:{request.META.get('REMOTE_ADDR')}", limit=10, window=900):
+        return JsonResponse({'error': 'Too many attempts. Please wait and try again.'}, status=429)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    uidb64 = data.get('uid')
+    token = data.get('token')
+    new_password = data.get('new_password')
+
+    if not all([uidb64, token, new_password]):
+        return JsonResponse({'error': 'uid, token and new_password are required'}, status=400)
+
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return JsonResponse({'error': 'Invalid reset link'}, status=400)
+
+    token_gen = PasswordResetTokenGenerator()
+    if not token_gen.check_token(user, token):
+        return JsonResponse({'error': 'Invalid or expired token'}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+    return JsonResponse({'message': 'Password has been reset successfully'})
+
+
 @login_required
 @require_http_methods(["GET"])
 def role_redirect(request):
@@ -352,4 +446,3 @@ def role_redirect(request):
         'role': role,
         'redirect_url': f'/{role.replace("_", "-")}'
     })
-

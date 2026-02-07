@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%2tb5-u#llm2vbv9@h7y*b8+h-1&v^=97l=sj)*ztu^2j85^&*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["aisu-portal.onrender.com", "127.0.0.1", "localhost"]
 
@@ -131,6 +131,12 @@ STATICFILES_DIRS = [
 
 LOGIN_REDIRECT_URL = '/accounts/redirect/'
 LOGIN_URL = '/accounts/login/'
+
+# Email (console backend by default; swap for SMTP in prod)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'no-reply@aisu.local'
+# URL used in password reset emails (must point to your ForgotPassword route)
+FRONTEND_RESET_URL = 'http://localhost:3000/forgot-password'
 
 # Django REST Framework settings
 REST_FRAMEWORK = {

@@ -1,11 +1,20 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import aisuLogo from './assets/aisu-logo.jpg';
 
 function Navigation({ user }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const location = useLocation();
+  const resolvedUser = React.useMemo(() => {
+    if (user && Object.keys(user).length > 0) return user;
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -17,7 +26,10 @@ function Navigation({ user }) {
   const getMenuItems = () => {
     const role = user?.role?.toLowerCase();
     const baseItems = [
-      { path: '/dashboard', label: 'Dashboard', icon: '📊' }
+      { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+      { path: '/activity', label: 'Activity', icon: '📜' },
+      { path: '/tickets', label: 'Tickets', icon: '🎫' },
+      { path: '/logs', label: 'Logs', icon: '📋' },
     ];
 
     switch (role) {
@@ -26,11 +38,21 @@ function Navigation({ user }) {
           ...baseItems,
           { path: '/users', label: 'User Management', icon: '👥' },
           { path: '/designations', label: 'Designations', icon: '🏷️' },
+          { path: '/settings', label: 'Settings', icon: '⚙️' },
         ];
       case 'it_team':
-        return [...baseItems, { path: '/designations', label: 'Designations', icon: '🏷️' }];
+        return [
+          ...baseItems,
+          { path: '/designations', label: 'Designations', icon: '🏷️' },
+          { path: '/settings', label: 'Settings', icon: '⚙️' },
+        ];
       case 'state_team':
-        return [...baseItems, { path: '/designations', label: 'Designations', icon: '🏷️' }];
+        return [
+          ...baseItems,
+          { path: '/designations', label: 'Designations', icon: '🏷️' },
+          { path: '/districts', label: 'Districts', icon: '🌐' },
+          { path: '/settings', label: 'Settings', icon: '⚙️' },
+        ];
       default:
         return baseItems;
     }
@@ -47,31 +69,32 @@ function Navigation({ user }) {
   const menuItems = getMenuItems();
   const notifications = getNotifications();
   const unreadCount = notifications.filter(n => !n.read).length;
-  const userRole = user?.role?.replace('_', ' ').toUpperCase() || 'USER';
+  const userRole = resolvedUser?.role?.replace('_', ' ').toUpperCase() || 'USER';
+  const displayName =
+    resolvedUser?.first_name || resolvedUser?.username || 'User';
+  const avatarInitial =
+    resolvedUser?.first_name?.[0] ||
+    resolvedUser?.username?.[0] ||
+    'U';
 
   return (
-    <nav className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <nav className="sidebar">
       <div className="sidebar-header">
-        <div className="logo">
-          <span className="logo-text">🎓 AISU</span>
-        </div>
-        <button onClick={() => setIsCollapsed(!isCollapsed)} className="collapse-button">
-          {isCollapsed ? '→' : '←'}
-        </button>
+        <a className="logo" href="/dashboard">
+          <img src={aisuLogo} alt="AISU logo" />
+        </a>
       </div>
 
       <div className="sidebar-content">
-        <div className="user-info">
+        <a className="user-info" href="/profile">
           <div className="user-avatar">
-            {user?.first_name?.[0] || user?.username?.[0] || 'U'}
+            {avatarInitial}
           </div>
-          {!isCollapsed && (
-            <div className="user-details">
-              <div className="user-name">{user?.first_name} {user?.last_name}</div>
-              <div className="user-role">{userRole}</div>
-            </div>
-          )}
-        </div>
+          <div className="user-details">
+            <div className="user-name">{displayName}</div>
+            <div className="user-role">{userRole}</div>
+          </div>
+        </a>
 
         <ul className="nav-menu">
           {menuItems.map((item) => (
@@ -86,6 +109,18 @@ function Navigation({ user }) {
             <Link to="/profile" className={`nav-link ${location.pathname === '/profile' ? 'active' : ''}`}>
               <span className="nav-icon">👤</span>
               {!isCollapsed && <span className="nav-label">Profile</span>}
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/help" className={`nav-link ${location.pathname === '/help' ? 'active' : ''}`}>
+              <span className="nav-icon">❓</span>
+              {!isCollapsed && <span className="nav-label">Help</span>}
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>
+              <span className="nav-icon">✉️</span>
+              {!isCollapsed && <span className="nav-label">Contact</span>}
             </Link>
           </li>
         </ul>
@@ -162,7 +197,7 @@ function Navigation({ user }) {
         .notification-count {
           position: absolute;
           right: 12px;
-          background: #f44336;
+          background: #ef4444;
           color: white;
           font-size: 10px;
           font-weight: 600;
@@ -179,7 +214,7 @@ function Navigation({ user }) {
           top: 100%;
           background: white;
           border-radius: 8px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
           z-index: 1001;
           margin-top: 8px;
           overflow: hidden;
@@ -190,14 +225,14 @@ function Navigation({ user }) {
           justify-content: space-between;
           align-items: center;
           padding: 12px 16px;
-          border-bottom: 1px solid #e0e0e0;
-          background: #f8f9fa;
+          border-bottom: 1px solid var(--slate-100);
+          background: var(--slate-50);
         }
 
         .notifications-header h4 {
           font-size: 14px;
           font-weight: 600;
-          color: #333;
+          color: var(--slate-800);
           margin: 0;
         }
 
@@ -205,7 +240,7 @@ function Navigation({ user }) {
           background: none;
           border: none;
           font-size: 20px;
-          color: #666;
+          color: var(--slate-600);
           cursor: pointer;
           padding: 0;
           line-height: 1;
@@ -218,7 +253,7 @@ function Navigation({ user }) {
 
         .notification-item {
           padding: 12px 16px;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 1px solid var(--slate-100);
           cursor: pointer;
           transition: background-color 0.2s;
         }
@@ -228,22 +263,22 @@ function Navigation({ user }) {
         }
 
         .notification-item:hover {
-          background: #f8f9fa;
+          background: var(--slate-50);
         }
 
         .notification-item.unread {
-          background: #e3f2fd;
+          background: #e0ecff;
         }
 
         .notification-item p {
           font-size: 13px;
-          color: #333;
+          color: var(--slate-800);
           margin: 0 0 4px 0;
         }
 
         .notification-time {
           font-size: 11px;
-          color: #999;
+          color: var(--slate-400);
         }
 
         .sidebar.collapsed .sidebar-notifications {
@@ -267,4 +302,3 @@ function Navigation({ user }) {
 }
 
 export default Navigation;
-

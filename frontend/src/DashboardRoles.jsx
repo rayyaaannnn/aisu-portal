@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from './Navigation';
+import aisuLogo from './assets/aisu-logo.jpg';
 import './Dashboard.css';
 
 /**
@@ -21,11 +22,49 @@ function useLogout() {
  * DashboardLayout - Layout wrapper with Navigation sidebar
  */
 function DashboardLayout({ children, user }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className="app-layout">
-      <Navigation user={user} />
+    <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+      <Navigation user={user} isOpen={isSidebarOpen} />
+      {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
       <main className="main-content">
-        {children}
+        <header className="global-header">
+          <div className="global-left">
+            <button
+              className="global-icon-button hamburger"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              aria-label="Toggle navigation"
+            >
+              ☰
+            </button>
+            <a className="global-brand" href="/dashboard">
+              <img src={aisuLogo} alt="AISU logo" className="global-logo" />
+              <div className="global-brand-text">
+                <span className="brand-name">All India Students Union</span>
+                <span className="brand-sub">Centralized Member Management</span>
+              </div>
+            </a>
+          </div>
+          <div className="global-actions">
+            <div className="page-context">
+              <span className="page-title">Dashboard</span>
+            </div>
+            <button type="button" className="global-icon-button" aria-label="Notifications">
+              🔔
+            </button>
+            <a href="/profile" className="global-avatar" aria-label="Open profile">
+              {user?.photo_url ? (
+                <img src={user.photo_url} alt="Profile" />
+              ) : (
+                (user?.username?.[0]?.toUpperCase() || 'A')
+              )}
+            </a>
+          </div>
+        </header>
+        <div className="dashboard-content with-global-header">
+          {children}
+        </div>
       </main>
     </div>
   );
@@ -123,27 +162,6 @@ export function AdminDashboard({ user }) {
   return (
     <DashboardLayout user={user}>
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <div className="header-left">
-            <h1>Dashboard</h1>
-            <p className="header-subtitle">Overview & Management</p>
-          </div>
-          <div className="header-actions">
-            <button className="header-button">
-              <span>🔔</span>
-              <NotificationBadge count={3} />
-            </button>
-            <div className="user-menu">
-              <div className="user-avatar">{user?.username?.[0] || 'A'}</div>
-              <div className="user-info">
-                <span className="user-name">{user?.username}</span>
-                <span className="user-role">{formatRole(user?.role || 'super_admin')}</span>
-              </div>
-            </div>
-            <button onClick={logout} className="logout-btn">Logout</button>
-          </div>
-        </header>
-
         <div className="dashboard-content">
           {/* Welcome Section */}
           <div className="welcome-section">
@@ -330,27 +348,6 @@ export function ITTeamDashboard({ user }) {
   return (
     <DashboardLayout user={user}>
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <div className="header-left">
-            <h1>IT Dashboard</h1>
-            <p className="header-subtitle">Technical Support</p>
-          </div>
-          <div className="header-actions">
-            <button className="header-button">
-              <span>🔔</span>
-              <NotificationBadge count={5} />
-            </button>
-            <div className="user-menu">
-              <div className="user-avatar">{user?.username?.[0] || 'I'}</div>
-              <div className="user-info">
-                <span className="user-name">{user?.username}</span>
-                <span className="user-role">IT Team</span>
-              </div>
-            </div>
-            <button onClick={logout} className="logout-btn">Logout</button>
-          </div>
-        </header>
-
         <div className="dashboard-content">
           <div className="welcome-section">
             <div className="welcome-card it-theme">
@@ -459,27 +456,6 @@ export function StateTeamDashboard({ user }) {
   return (
     <DashboardLayout user={user}>
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <div className="header-left">
-            <h1>State Dashboard</h1>
-            <p className="header-subtitle">State: {user?.state || 'N/A'}</p>
-          </div>
-          <div className="header-actions">
-            <button className="header-button">
-              <span>🔔</span>
-              <NotificationBadge count={2} />
-            </button>
-            <div className="user-menu">
-              <div className="user-avatar">{user?.username?.[0] || 'S'}</div>
-              <div className="user-info">
-                <span className="user-name">{user?.username}</span>
-                <span className="user-role">State Team</span>
-              </div>
-            </div>
-            <button onClick={logout} className="logout-btn">Logout</button>
-          </div>
-        </header>
-
         <div className="dashboard-content">
           <div className="welcome-section">
             <div className="welcome-card state-theme">
@@ -580,23 +556,6 @@ export function DistrictTeamDashboard({ user }) {
   return (
     <DashboardLayout user={user}>
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <div className="header-left">
-            <h1>District Dashboard</h1>
-            <p className="header-subtitle">District: {user?.district || 'N/A'}</p>
-          </div>
-          <div className="header-actions">
-            <div className="user-menu">
-              <div className="user-avatar">{user?.username?.[0] || 'D'}</div>
-              <div className="user-info">
-                <span className="user-name">{user?.username}</span>
-                <span className="user-role">District Team</span>
-              </div>
-            </div>
-            <button onClick={logout} className="logout-btn">Logout</button>
-          </div>
-        </header>
-
         <div className="dashboard-content">
           <div className="welcome-section">
             <div className="welcome-card district-theme">
@@ -684,4 +643,3 @@ export function DistrictTeamDashboard({ user }) {
     </DashboardLayout>
   );
 }
-
