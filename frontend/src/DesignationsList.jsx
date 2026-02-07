@@ -488,7 +488,15 @@ function DesignationsList() {
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const response = await fetch('/accounts/designations/', { headers });
+      const base =
+        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) ||
+        '';
+      const url = `${base.replace(/\/$/, '')}/accounts/designations/`;
+
+      const response = await fetch(url, {
+        headers,
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch designations');
