@@ -1,30 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=DM+Sans:wght@500;600&display=swap');
 
 :root {
-  /* Core palette */
-  --bg-900: #040812;
-  --bg-800: #0a1224;
-  --bg-700: #0f1b32;
-  --surface-1: rgba(16, 27, 50, 0.82);
-  --surface-2: rgba(19, 35, 66, 0.96);
-  --surface-3: rgba(46, 65, 104, 0.25);
+  /* Professional navy/blue palette */
+  --bg-900: #0b1220;
+  --bg-800: #0f172a;
+  --bg-700: #111827;
+  --surface-1: rgba(17, 24, 39, 0.9);
+  --surface-2: rgba(22, 33, 55, 0.95);
+  --surface-3: rgba(34, 45, 68, 0.22);
   --border-strong: rgba(255, 255, 255, 0.12);
   --border-soft: rgba(255, 255, 255, 0.06);
-  --text-strong: #e8edff;
-  --text-muted: #9eb3dd;
-  --text-dim: #6f82aa;
-  --accent-500: #7c3aed;
-  --accent-600: #8b5cf6;
-  --accent-700: #a855f7;
-  --mint-500: #22d3ee;
-  --mint-600: #0ea5e9;
-  --success-500: #4ade80;
-  --warning-500: #fbbf24;
-  --danger-500: #f87171;
+  --text-strong: #e5e7eb;
+  --text-muted: #cbd5e1;
+  --text-dim: #94a3b8;
+  --accent-500: #2563eb;
+  --accent-600: #1d4ed8;
+  --accent-700: #1e3a8a;
+  --mint-500: #0ea5e9;
+  --mint-600: #14b8a6;
+  --success-500: #22c55e;
+  --warning-500: #f59e0b;
+  --danger-500: #ef4444;
 
-  --shadow-soft: 0 16px 60px rgba(0, 0, 0, 0.35);
-  --shadow-strong: 0 20px 80px rgba(2, 6, 23, 0.55);
-  --glow-accent: 0 0 28px rgba(124, 58, 237, 0.35), 0 0 52px rgba(14, 165, 233, 0.25);
+  --shadow-soft: 0 16px 60px rgba(6, 11, 21, 0.35);
+  --shadow-strong: 0 20px 80px rgba(6, 11, 21, 0.55);
+  --glow-accent: 0 0 28px rgba(37, 99, 235, 0.3), 0 0 52px rgba(29, 78, 216, 0.22);
 }
 
 * {
@@ -34,11 +34,11 @@
 }
 
 body {
-  font-family: 'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: radial-gradient(circle at 14% 20%, rgba(124, 58, 237, 0.16), transparent 22%),
-    radial-gradient(circle at 80% 8%, rgba(14, 165, 233, 0.2), transparent 25%),
-    radial-gradient(circle at 42% 72%, rgba(34, 211, 238, 0.16), transparent 32%),
-    linear-gradient(135deg, #050a18 0%, #050a12 40%, #070f1f 100%);
+  font-family: 'Manrope', 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(37, 99, 235, 0.12), transparent 24%),
+    radial-gradient(circle at 78% 12%, rgba(20, 184, 166, 0.16), transparent 26%),
+    linear-gradient(135deg, #0b1220 0%, #0f172a 45%, #111827 100%);
   color: var(--text-strong);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -52,11 +52,10 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 32px 32px, 32px 32px;
-  mix-blend-mode: screen;
-  opacity: 0.6;
+  opacity: 0.5;
   z-index: 0;
 }
 
@@ -67,7 +66,7 @@ body::before {
 }
 
 a {
-  color: var(--mint-500);
+  color: var(--accent-500);
   text-decoration: none;
 }
 

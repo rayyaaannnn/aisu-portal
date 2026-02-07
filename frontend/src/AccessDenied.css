@@ -1,11 +1,11 @@
-/* Futuristic Access Denied */
+/* Futuristic Access Denied - Grey and Neon Green Theme */
 .access-denied-container {
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 24px;
   position: relative;
-  color: #e6edff;
+  color: #e6e6e6;
 }
 
 .access-denied-container::before {
@@ -13,7 +13,7 @@
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 20% 20%, rgba(248, 113, 113, 0.22), transparent 32%),
-    radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.16), transparent 32%);
+    radial-gradient(circle at 80% 10%, rgba(37, 99, 235, 0.14), transparent 32%);
   filter: blur(6px);
   pointer-events: none;
 }
@@ -21,11 +21,11 @@
 .access-denied-card {
   position: relative;
   width: min(420px, 100%);
-  background: rgba(12, 20, 38, 0.86);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 20, 20, 0.86);
+  border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 30px rgba(37, 99, 235, 0.08);
   text-align: center;
   backdrop-filter: blur(12px);
   overflow: hidden;
@@ -47,7 +47,7 @@
   display: grid;
   place-items: center;
   font-size: 42px;
-  background: linear-gradient(145deg, rgba(248, 113, 113, 0.26), rgba(124, 58, 237, 0.18));
+  background: linear-gradient(145deg, rgba(248, 113, 113, 0.26), rgba(37, 99, 235, 0.15));
   border: 1px solid rgba(248, 113, 113, 0.35);
   box-shadow: 0 12px 30px rgba(248, 113, 113, 0.25);
 }
@@ -58,14 +58,14 @@
 }
 
 .access-denied-card p {
-  color: #9db3d9;
+  color: #a0a0a0;
   line-height: 1.6;
   margin-bottom: 8px;
 }
 
 .access-denied-hint {
   font-size: 13px;
-  color: #7f91b7;
+  color: #707070;
   margin-bottom: 18px !important;
 }
 
@@ -75,17 +75,17 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 18px;
-  background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   border-radius: 12px;
-  color: #fff;
+  color: #0a0a0a;
   font-weight: 700;
   text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 18px 60px rgba(14, 165, 233, 0.32);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  box-shadow: 0 18px 60px rgba(37, 99, 235, 0.32);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .access-denied-link:hover {
   transform: translateY(-2px);
-  box-shadow: 0 24px 70px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 24px 70px rgba(0, 255, 65, 0.35);
 }
