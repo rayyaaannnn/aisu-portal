@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SimplePage from './SimplePage';
+import './Dashboard.css';
 
-/**
- * Profile - Component for users to view and edit their profile
- */
 function Profile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,7 +11,6 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
-  // Form state
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -89,12 +86,20 @@ function Profile() {
       });
 
       if (response.ok) {
-        const updatedProfile = await response.json();
-        setProfile(updatedProfile);
-        setSuccess('Profile updated successfully!');
+        const data = await response.json();
+        setProfile(data.profile);
+        setFormData({
+          first_name: data.profile.first_name || '',
+          last_name: data.profile.last_name || '',
+          email: data.profile.email || '',
+          state: data.profile.state || '',
+          district: data.profile.district || '',
+          phone: data.profile.phone || '',
+          photo_url: data.profile.photo_url || ''
+        });
+        setSuccess(data.message || 'Profile updated successfully!');
         setIsEditing(false);
 
-        // Update localStorage user data
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         userData.first_name = formData.first_name;
         userData.last_name = formData.last_name;
@@ -126,122 +131,179 @@ function Profile() {
     return (
       <SimplePage title="Profile" subtitle="Your account details">
         <div className="profile-container">
-          <div className="loading">Loading profile...</div>
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading profile...</p>
+          </div>
         </div>
       </SimplePage>
     );
   }
 
   return (
-    <SimplePage title="Profile" subtitle="Your account details">
+    <SimplePage title="Profile" subtitle="Manage your account information">
       <div className="profile-container">
-        <header className="page-header">
-          <h1>My Profile</h1>
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="edit-profile-button"
-            >
-              Edit Profile
-            </button>
-          )}
-        </header>
+        <div className="profile-header-card">
+          <div className="profile-header-content">
+            <div className="profile-avatar-large">
+              {profile?.photo_url ? (
+                <img src={profile.photo_url} alt="Profile" />
+              ) : (
+                <div className="avatar-initial">
+                  {profile?.first_name?.[0] || profile?.username?.[0] || 'U'}
+                </div>
+              )}
+            </div>
+            <div className="profile-header-info">
+              <h2>{profile?.first_name} {profile?.last_name}</h2>
+              <p className="profile-username">@{profile?.username}</p>
+              <span className={`profile-role-badge ${profile?.role}`}>
+                {profile?.role?.replace('_', ' ').toUpperCase()}
+              </span>
+            </div>
+          </div>
+        </div>
 
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+        {error && (
+          <div className="profile-message error">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="profile-message success">
+            {success}
+          </div>
+        )}
 
-        <div className="profile-content">
+        <div className="profile-content-card">
           {isEditing ? (
-            <form onSubmit={handleSubmit} className="profile-form">
-              <div className="form-section">
-                <h2>Personal Information</h2>
-
-                <div className="form-row">
+            <form onSubmit={handleSubmit} className="profile-edit-form">
+              <div className="profile-section">
+                <div className="section-header">
+                  <h3>Personal Information</h3>
+                </div>
+                <div className="form-grid">
                   <div className="form-group">
-                    <label>First Name:</label>
+                    <label>First Name</label>
                     <input
                       type="text"
                       name="first_name"
                       value={formData.first_name}
                       onChange={handleInputChange}
+                      placeholder="Enter first name"
                     />
                   </div>
-
                   <div className="form-group">
-                    <label>Last Name:</label>
+                    <label>Last Name</label>
                     <input
                       type="text"
                       name="last_name"
                       value={formData.last_name}
                       onChange={handleInputChange}
+                      placeholder="Enter last name"
+                    />
+                  </div>
+                  <div className="form-group full-width">
+                    <label>Email Address</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Enter email address"
                     />
                   </div>
                 </div>
-
-                <div className="form-group">
-                  <label>Email:</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
               </div>
 
-              <div className="form-section">
-                <h2>Location Information</h2>
-
-                <div className="form-row">
+              <div className="profile-section">
+                <div className="section-header">
+                  <h3>Location Information</h3>
+                </div>
+                <div className="form-grid">
                   <div className="form-group">
-                    <label>State:</label>
+                    <label>State</label>
                     <input
                       type="text"
                       name="state"
                       value={formData.state}
                       onChange={handleInputChange}
+                      placeholder="Enter state"
                     />
                   </div>
-
                   <div className="form-group">
-                    <label>District:</label>
+                    <label>District</label>
                     <input
                       type="text"
                       name="district"
                       value={formData.district}
                       onChange={handleInputChange}
+                      placeholder="Enter district"
                     />
                   </div>
                 </div>
+              </div>
 
-                <div className="form-group">
-                  <label>Phone:</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                  />
+              <div className="profile-section">
+                <div className="section-header">
+                  <h3>Contact Information</h3>
+                </div>
+                <div className="form-grid">
+                  <div className="form-group full-width">
+                    <label>Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  <div className="form-group full-width">
+                    <label>Photo URL</label>
+                    <input
+                      type="url"
+                      name="photo_url"
+                      value={formData.photo_url}
+                      onChange={handleInputChange}
+                      placeholder="https://example.com/photo.jpg"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="form-section">
-                <h2>Additional Information</h2>
-
-                <div className="form-group">
-                  <label>Photo URL:</label>
-                  <input
-                    type="url"
-                    name="photo_url"
-                    value={formData.photo_url}
-                    onChange={handleInputChange}
-                    placeholder="https://example.com/photo.jpg"
-                  />
+              <div className="profile-section">
+                <div className="section-header">
+                  <h3>Account Information</h3>
+                </div>
+                <div className="account-info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Username</span>
+                    <span className="info-value">{profile?.username}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Role</span>
+                    <span className="info-value role">
+                      {profile?.role?.replace('_', ' ').toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Member Since</span>
+                    <span className="info-value">
+                      {profile?.date_joined
+                        ? new Date(profile.date_joined).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
+                        : 'N/A'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="form-actions">
+              <div className="form-actions-bar">
                 <button type="submit" className="submit-button">
                   Save Changes
                 </button>
@@ -251,57 +313,111 @@ function Profile() {
               </div>
             </form>
           ) : (
-            <div className="profile-view">
-              <div className="profile-avatar">
-                {profile?.photo_url ? (
-                  <img src={profile.photo_url} alt="Profile" />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {profile?.first_name?.[0] || profile?.username?.[0] || 'U'}
+            <div className="profile-view-mode">
+              <div className="display-section">
+                <div className="section-header">
+                  <h3>Personal Information</h3>
+                </div>
+                <div className="info-grid">
+                  <div className="info-card">
+                    <span className="info-label">Full Name</span>
+                    <span className="info-value">
+                      {profile?.first_name} {profile?.last_name || 'Not specified'}
+                    </span>
                   </div>
-                )}
+                  <div className="info-card">
+                    <span className="info-label">Email Address</span>
+                    <span className="info-value">{profile?.email}</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="profile-details">
-                <div className="detail-section">
-                  <h2>Personal Information</h2>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <label>Username:</label>
-                      <span>{profile?.username}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Full Name:</label>
-                      <span>{profile?.first_name} {profile?.last_name}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Email:</label>
-                      <span>{profile?.email}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Role:</label>
-                      <span>{profile?.role?.replace('_', ' ').toUpperCase()}</span>
-                    </div>
+              <div className="display-section">
+                <div className="section-header">
+                  <h3>Location Information</h3>
+                </div>
+                <div className="info-grid">
+                  <div className="info-card">
+                    <span className="info-label">State</span>
+                    <span className="info-value">{profile?.state || 'Not specified'}</span>
+                  </div>
+                  <div className="info-card">
+                    <span className="info-label">District</span>
+                    <span className="info-value">{profile?.district || 'Not specified'}</span>
                   </div>
                 </div>
+              </div>
 
-                <div className="detail-section">
-                  <h2>Location Information</h2>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <label>State:</label>
-                      <span>{profile?.state || 'Not specified'}</span>
+              <div className="display-section">
+                <div className="section-header">
+                  <h3>Contact Information</h3>
+                </div>
+                <div className="info-grid">
+                  <div className="info-card">
+                    <span className="info-label">Phone Number</span>
+                    <span className="info-value">{profile?.phone || 'Not specified'}</span>
+                  </div>
+                  <div className="info-card">
+                    <span className="info-label">Photo</span>
+                    <span className="info-value photo">
+                      {profile?.photo_url ? (
+                        <a href={profile.photo_url} target="_blank" rel="noopener noreferrer" className="photo-link">
+                          View Photo
+                        </a>
+                      ) : (
+                        'Not set'
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="display-section">
+                <div className="section-header">
+                  <h3>Account Information</h3>
+                </div>
+                <div className="account-info-grid">
+                  <div className="info-card full">
+                    <div className="info-row">
+                      <span className="info-label">Username</span>
+                      <span className="info-value">{profile?.username}</span>
                     </div>
-                    <div className="detail-item">
-                      <label>District:</label>
-                      <span>{profile?.district || 'Not specified'}</span>
+                  </div>
+                  <div className="info-card full">
+                    <div className="info-row">
+                      <span className="info-label">Role</span>
+                      <span className="info-value">
+                        <span className={`role-tag ${profile?.role}`}>
+                          {profile?.role?.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </span>
                     </div>
-                    <div className="detail-item">
-                      <label>Phone:</label>
-                      <span>{profile?.phone || 'Not specified'}</span>
+                  </div>
+                  <div className="info-card full">
+                    <div className="info-row">
+                      <span className="info-label">Member Since</span>
+                      <span className="info-value">
+                        {profile?.date_joined
+                          ? new Date(profile.date_joined).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })
+                          : 'N/A'}
+                      </span>
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="form-actions-bar">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="profile-edit-btn"
+                >
+                  Edit Profile
+                </button>
               </div>
             </div>
           )}
@@ -312,3 +428,4 @@ function Profile() {
 }
 
 export default Profile;
+

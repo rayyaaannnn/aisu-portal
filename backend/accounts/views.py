@@ -149,7 +149,22 @@ def update_profile(request):
         profile.photo_url = data['photo_url']
     profile.save()
     
-    return JsonResponse({'message': 'Profile updated successfully'})
+    # Return updated profile data
+    return JsonResponse({
+        'message': 'Profile updated successfully',
+        'profile': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': profile.role,
+            'state': profile.state,
+            'district': profile.district,
+            'phone': profile.phone,
+            'photo_url': profile.photo_url,
+        }
+    })
 
 
 @login_required
