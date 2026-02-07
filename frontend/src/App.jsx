@@ -16,6 +16,7 @@ import Contact from './Contact';
 import Districts from './Districts';
 import Terms from './Terms';
 import Privacy from './Privacy';
+import AccessDenied from './AccessDenied';
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team', 'state_team', 'district_team']}>
             <RoleBasedDashboard />
           </PrivateRoute>
         }
@@ -32,7 +33,7 @@ function App() {
       <Route
         path="/users"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin']}>
             <UserManagement />
           </PrivateRoute>
         }
@@ -40,7 +41,7 @@ function App() {
       <Route
         path="/designations"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team', 'state_team', 'district_team']}>
             <DesignationsList />
           </PrivateRoute>
         }
@@ -57,7 +58,7 @@ function App() {
       <Route
         path="/tickets"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team']}>
             <Tickets />
           </PrivateRoute>
         }
@@ -65,7 +66,7 @@ function App() {
       <Route
         path="/logs"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team']}>
             <Logs />
           </PrivateRoute>
         }
@@ -73,7 +74,7 @@ function App() {
       <Route
         path="/activity"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team', 'state_team', 'district_team']}>
             <Activity />
           </PrivateRoute>
         }
@@ -81,7 +82,7 @@ function App() {
       <Route
         path="/settings"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team', 'state_team']}>
             <Settings />
           </PrivateRoute>
         }
@@ -89,7 +90,7 @@ function App() {
       <Route
         path="/help"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team', 'state_team', 'district_team']}>
             <Help />
           </PrivateRoute>
         }
@@ -97,7 +98,7 @@ function App() {
       <Route
         path="/contact"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['super_admin', 'it_team', 'state_team', 'district_team']}>
             <Contact />
           </PrivateRoute>
         }
@@ -105,13 +106,14 @@ function App() {
       <Route
         path="/districts"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={['state_team', 'district_team', 'super_admin']}>
             <Districts />
           </PrivateRoute>
         }
       />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/access-denied" element={<AccessDenied />} />
       {/* Catch all route - redirect to login */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

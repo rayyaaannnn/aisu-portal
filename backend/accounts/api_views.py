@@ -138,3 +138,9 @@ class DesignationViewSet(viewsets.ModelViewSet):
     serializer_class = DesignationSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def get_permissions(self):
+        # Super admins and IT team can mutate; others read-only
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            self.permission_classes = [RoleRequiredPermission]
+            self.required_role = ['super_admin', 'it_team']
+        return super().get_permissions()

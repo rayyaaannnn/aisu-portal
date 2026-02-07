@@ -14,6 +14,27 @@ from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from django.utils import timezone
+from functools import wraps
+
+
+def require_roles(*roles):
+    """
+    Decorator to enforce role-based access on function-based views.
+    Usage: @login_required @require_roles('super_admin', 'it_team')
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped(request, *args, **kwargs):
+            try:
+                profile = Profile.objects.get(user=request.user)
+            except Profile.DoesNotExist:
+                return JsonResponse({'error': 'Profile not found'}, status=403)
+
+            if roles and profile.role not in roles:
+                return JsonResponse({'error': 'Access denied'}, status=403)
+            return view_func(request, *args, **kwargs)
+        return _wrapped
+    return decorator
 
 
 def role_required(role_name):
@@ -132,15 +153,10 @@ def update_profile(request):
 
 
 @login_required
+@require_roles('super_admin')
 @require_http_methods(["GET"])
 def manage_users(request):
     """List all users (super_admin only)."""
-    try:
-        profile = Profile.objects.get(user=request.user)
-        if profile.role != 'super_admin':
-            return JsonResponse({'error': 'Access denied. Super admin only.'}, status=403)
-    except Profile.DoesNotExist:
-        return JsonResponse({'error': 'Profile not found'}, status=404)
     
     users = User.objects.all().prefetch_related('profile')
     users_data = []
@@ -212,6 +228,7 @@ def system_status(request):
 
 
 @login_required
+@require_roles('super_admin')
 @require_http_methods(["POST"])
 def add_user(request):
     """Create a new user (super_admin only)."""
@@ -267,6 +284,7 @@ def add_user(request):
 
 
 @login_required
+@require_roles('super_admin')
 @require_http_methods(["PUT"])
 def edit_user(request, user_id):
     """Edit an existing user (super_admin only)."""
@@ -312,6 +330,7 @@ def edit_user(request, user_id):
 
 
 @login_required
+@require_roles('super_admin')
 @require_http_methods(["DELETE"])
 def delete_user(request, user_id):
     """Delete a user (super_admin only)."""
