@@ -548,22 +548,16 @@ function DesignationsList() {
     );
   }
 
-  if (error) {
-    return (
-      <SimplePage title="Designations" subtitle="Organizational hierarchy">
-        <div className="designations-container">
-          <div className="error-message">
-            Error: {error}. Make sure the backend is running and reachable, and you are logged in if required.
-          </div>
-        </div>
-      </SimplePage>
-    );
-  }
-
   return (
     <SimplePage title="Designations" subtitle="Organizational hierarchy">
       <div className="designations-container">
         <h1 className="designations-title">Organizational Designations</h1>
+
+        {error && (
+          <div className="error-message" style={{ marginBottom: '12px' }}>
+            Could not load live designations ({error}). Showing DRAR reference data below.
+          </div>
+        )}
 
         <div className="designation-level-section drar-block">
           <div className="level-header">
