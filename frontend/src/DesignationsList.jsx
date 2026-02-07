@@ -485,12 +485,10 @@ function DesignationsList() {
   const fetchDesignations = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('/accounts/designations/', {
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        },
-      });
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch('/accounts/designations/', { headers });
 
       if (!response.ok) {
         throw new Error('Failed to fetch designations');
@@ -554,7 +552,9 @@ function DesignationsList() {
     return (
       <SimplePage title="Designations" subtitle="Organizational hierarchy">
         <div className="designations-container">
-          <div className="error-message">Error: {error}</div>
+          <div className="error-message">
+            Error: {error}. Make sure the backend is running and reachable, and you are logged in if required.
+          </div>
         </div>
       </SimplePage>
     );
