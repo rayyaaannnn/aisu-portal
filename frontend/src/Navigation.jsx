@@ -81,6 +81,7 @@ function Navigation({ user, isOpen, setIsOpen }) {
         return [
           ...baseItems,
           { path: '/users', label: 'User Management', icon: '👥' },
+          { path: '/login-logs', label: 'Login Logs', icon: '🔓' },
           { path: '/designations', label: 'Designations', icon: '🏷️' },
           { path: '/settings', label: 'Settings', icon: '⚙️' },
         ];

@@ -77,7 +77,7 @@ class Designation(models.Model):
 
 class Notification(models.Model):
     """Model to represent user notifications."""
-    
+
     NOTIFICATION_TYPES = (
         ('info', 'Information'),
         ('warning', 'Warning'),
@@ -85,7 +85,7 @@ class Notification(models.Model):
         ('system', 'System Message'),
         ('update', 'Update'),
     )
-    
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=200)
     message = models.TextField()
@@ -93,11 +93,31 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
-    
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Notification'
         verbose_name_plural = 'Notifications'
-    
+
     def __str__(self):
         return f"{self.title} - {self.user.username}"
+
+
+class LoginLog(models.Model):
+    """Model to track user login activities."""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_logs')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    success = models.BooleanField(default=True)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = 'Login Log'
+        verbose_name_plural = 'Login Logs'
+
+    def __str__(self):
+        status = "Success" if self.success else "Failed"
+        return f"{self.user.username} - {status} - {self.timestamp}"

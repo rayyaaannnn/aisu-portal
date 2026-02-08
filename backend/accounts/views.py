@@ -289,6 +289,42 @@ def manage_users(request):
     return JsonResponse({'users': users_data})
 
 
+@csrf_exempt
+@jwt_login_required
+@require_roles('super_admin')
+@require_http_methods(["GET"])
+def login_logs(request):
+    """View to get login logs (super_admin only)."""
+    from .models import LoginLog
+    
+    # Get query parameters for filtering
+    limit = int(request.GET.get('limit', 50))
+    offset = int(request.GET.get('offset', 0))
+    
+    # Get all login logs ordered by most recent first
+    logs = LoginLog.objects.select_related('user').all()[offset:offset+limit]
+    
+    logs_data = []
+    for log in logs:
+        log_entry = {
+            'id': log.id,
+            'username': log.user.username if log.user else 'Unknown',
+            'ip_address': log.ip_address,
+            'user_agent': log.user_agent,
+            'timestamp': log.timestamp.isoformat() if log.timestamp else None,
+            'success': log.success,
+            'session_key': log.session_key
+        }
+        logs_data.append(log_entry)
+    
+    return JsonResponse({
+        'logs': logs_data,
+        'total_count': LoginLog.objects.count(),
+        'limit': limit,
+        'offset': offset
+    })
+
+
 @jwt_login_required
 @require_http_methods(["GET"])
 def system_status(request):
@@ -549,20 +585,54 @@ def api_login(request):
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
+        # Log failed login attempt
+        from .models import LoginLog
+        LoginLog.objects.create(
+            user=None,
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT'),
+            success=False
+        )
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     username = data.get('username')
     password = data.get('password')
 
     if not username or not password:
+        # Log failed login attempt
+        from .models import LoginLog
+        LoginLog.objects.create(
+            user=None,
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT'),
+            success=False
+        )
         return JsonResponse({'error': 'Username and password required'}, status=400)
 
     user = authenticate(request, username=username, password=password)
 
     if user is None:
+        # Log failed login attempt
+        from .models import LoginLog
+        LoginLog.objects.create(
+            user=None,
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT'),
+            success=False
+        )
         return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
     login(request, user)
+
+    # Log successful login
+    from .models import LoginLog
+    LoginLog.objects.create(
+        user=user,
+        ip_address=request.META.get('REMOTE_ADDR'),
+        user_agent=request.META.get('HTTP_USER_AGENT'),
+        success=True,
+        session_key=request.session.session_key
+    )
 
     try:
         profile = Profile.objects.get(user=user)

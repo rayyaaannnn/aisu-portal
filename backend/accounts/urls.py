@@ -26,7 +26,8 @@ urlpatterns = [
     # Dashboard endpoints
     path('dashboard-counts/', views.dashboard_counts, name='dashboard_counts'),
     path('system-status/', views.system_status, name='system_status'),
-    
+    path('active-today/', views.active_today, name='active_today'),
+
     # Profile endpoints
     path('profile/', views.my_profile, name='my_profile'),
     path('profile/update/', views.update_profile, name='update_profile'),
@@ -36,4 +37,12 @@ urlpatterns = [
     path('users/add/', views.add_user, name='add_user'),
     path('users/<int:user_id>/edit/', views.edit_user, name='edit_user'),
     path('users/<int:user_id>/delete/', views.delete_user, name='delete_user'),
+
+    # Login logs endpoint (super_admin only)
+    path('login-logs/', views.login_logs, name='login_logs'),
+
+    # Notification endpoints
+    path('notifications/', views.get_notifications, name='get_notifications'),
+    path('notifications/<int:notification_id>/mark-read/', views.mark_notification_as_read, name='mark_notification_as_read'),
+    path('notifications/mark-all-read/', views.mark_all_notifications_as_read, name='mark_all_notifications_as_read'),
 ]

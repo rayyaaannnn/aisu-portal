@@ -17,6 +17,7 @@ import Districts from './Districts';
 import Terms from './Terms';
 import Privacy from './Privacy';
 import AccessDenied from './AccessDenied';
+import LoginLogs from './LoginLogs';
 
 function App() {
   return (
@@ -60,6 +61,14 @@ function App() {
         element={
           <PrivateRoute allowedRoles={['super_admin', 'it_team']}>
             <Tickets />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/login-logs"
+        element={
+          <PrivateRoute allowedRoles={['super_admin']}>
+            <LoginLogs />
           </PrivateRoute>
         }
       />
