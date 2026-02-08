@@ -1,15 +1,28 @@
-# Python
-__pycache__/
-*.py[cod]
-
-# Node / front-end build
-node_modules/
-frontend/dist/
-
-# Env
+```
+# Environment variables
 .env
+.env.local
 .env.*
 
-# OS
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/modules/
 .DS_Store
-Thumbs.db
+```
