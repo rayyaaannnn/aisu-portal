@@ -15,6 +15,32 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from django.utils import timezone
 from functools import wraps
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
+
+def jwt_login_required(view_func):
+    """Custom decorator to handle both session and JWT authentication"""
+    def wrapper(request, *args, **kwargs):
+        # First try Django's session authentication
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            return view_func(request, *args, **kwargs)
+
+        # Then try JWT authentication
+        jwt_auth = JWTAuthentication()
+        try:
+            # Authenticate returns (user, validated_token) or (None, None)
+            user_token_tuple = jwt_auth.authenticate(request)
+            if user_token_tuple is not None:
+                request.user = user_token_tuple[0]  # Set user on request
+                return view_func(request, *args, **kwargs)
+        except AuthenticationFailed:
+            pass
+
+        # If neither worked, return unauthorized
+        return JsonResponse({'error': 'Authentication credentials were not provided.'}, status=401)
+
+    return wrapper
 
 
 def require_roles(*roles):
@@ -62,7 +88,7 @@ def role_required(role_name):
     return decorator
 
 
-@login_required
+@jwt_login_required
 @require_http_methods(["GET"])
 def dashboard_counts(request):
     """Return dashboard statistics as JSON."""
@@ -87,7 +113,7 @@ def dashboard_counts(request):
     return JsonResponse(data)
 
 
-@login_required
+@jwt_login_required
 @require_http_methods(["GET"])
 def my_profile(request):
     """Get current user's profile as JSON."""
@@ -112,7 +138,8 @@ def my_profile(request):
     return JsonResponse(data)
 
 
-@login_required
+@csrf_exempt
+@jwt_login_required
 @require_http_methods(["PUT"])
 def update_profile(request):
     """Update current user's profile."""
@@ -120,35 +147,91 @@ def update_profile(request):
         profile = Profile.objects.get(user=request.user)
     except Profile.DoesNotExist:
         return JsonResponse({'error': 'Profile not found'}, status=404)
-    
-    import json
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
+
     user = request.user
-    
-    # Update user fields
-    if 'first_name' in data:
-        user.first_name = data['first_name']
-    if 'last_name' in data:
-        user.last_name = data['last_name']
-    if 'email' in data:
-        user.email = data['email']
-    user.save()
-    
-    # Update profile fields
-    if 'state' in data:
-        profile.state = data['state']
-    if 'district' in data:
-        profile.district = data['district']
-    if 'phone' in data:
-        profile.phone = data['phone']
-    if 'photo_url' in data:
-        profile.photo_url = data['photo_url']
-    profile.save()
-    
+
+    # Determine the type of data and handle accordingly
+    if request.content_type and ('multipart/form-data' in request.content_type or 'application/x-www-form-urlencoded' in request.content_type):
+        # Handle form data (multipart or urlencoded)
+        data = request.POST
+
+        # Update user fields
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'email' in data:
+            user.email = data['email']
+        user.save()
+
+        # Update profile fields
+        if 'state' in data:
+            profile.state = data['state']
+        if 'district' in data:
+            profile.district = data['district']
+        if 'phone' in data:
+            profile.phone = data['phone']
+        # Handle photo_url field in form data (when no file is uploaded but URL is provided)
+        if 'photo_url' in data:
+            profile.photo_url = data['photo_url']
+
+        # Handle file upload
+        if 'photo' in request.FILES:
+            photo_file = request.FILES['photo']
+
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+            if photo_file.content_type not in allowed_types:
+                return JsonResponse({'error': 'Invalid file type. Please upload an image (JPEG, PNG, GIF, or WebP).'}, status=400)
+
+            # Validate file size (max 5MB)
+            max_size = 5 * 1024 * 1024  # 5MB
+            if photo_file.size > max_size:
+                return JsonResponse({'error': 'File size exceeds 5MB limit.'}, status=400)
+
+            import os
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            import uuid
+
+            # Generate a unique filename
+            ext = os.path.splitext(photo_file.name)[1]
+            unique_filename = f"profile_photos/{uuid.uuid4()}{ext}"
+
+            # Save the file
+            saved_path = default_storage.save(unique_filename, ContentFile(photo_file.read()))
+
+            # Update the profile with the new photo URL
+            profile.photo_url = f"/media/{saved_path}"
+        profile.save()
+    else:
+        # Handle JSON data
+        import json
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        # Update user fields
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'email' in data:
+            user.email = data['email']
+        user.save()
+
+        # Update profile fields
+        if 'state' in data:
+            profile.state = data['state']
+        if 'district' in data:
+            profile.district = data['district']
+        if 'phone' in data:
+            profile.phone = data['phone']
+        if 'photo_url' in data:
+            profile.photo_url = data['photo_url']
+        profile.save()
+
     # Return updated profile data
     return JsonResponse({
         'message': 'Profile updated successfully',
@@ -167,12 +250,13 @@ def update_profile(request):
     })
 
 
-@login_required
+@csrf_exempt
+@jwt_login_required
 @require_roles('super_admin')
 @require_http_methods(["GET"])
 def manage_users(request):
     """List all users (super_admin only)."""
-    
+
     users = User.objects.all().prefetch_related('profile')
     users_data = []
     for user in users:
@@ -201,11 +285,11 @@ def manage_users(request):
                 'district': None,
                 'date_joined': user.date_joined.isoformat() if user.date_joined else None,
             })
-    
+
     return JsonResponse({'users': users_data})
 
 
-@login_required
+@jwt_login_required
 @require_http_methods(["GET"])
 def system_status(request):
     """Return simple live health stats for the portal."""
@@ -242,7 +326,92 @@ def system_status(request):
     return JsonResponse(data)
 
 
-@login_required
+@jwt_login_required
+@require_http_methods(["GET"])
+def active_today(request):
+    """Return count of users who have been active today."""
+    from django.utils import timezone
+    import datetime
+    
+    # Get today's date
+    today = timezone.now().date()
+    
+    # Count users who have been active today (based on last_activity in Profile)
+    from .models import Profile
+    active_count = Profile.objects.filter(
+        last_activity__date=today
+    ).count()
+    
+    data = {
+        'active_today': active_count,
+        'date': today.isoformat(),
+        'timestamp': timezone.now().isoformat(),
+    }
+    return JsonResponse(data)
+
+
+@jwt_login_required
+@require_http_methods(["GET"])
+def get_notifications(request):
+    """Return notifications for the current user."""
+    from .models import Notification
+    
+    # Get all notifications for the current user, ordered by newest first
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:20]  # Limit to last 20
+    
+    notifications_data = []
+    for notification in notifications:
+        notifications_data.append({
+            'id': notification.id,
+            'title': notification.title,
+            'message': notification.message,
+            'type': notification.notification_type,
+            'is_read': notification.is_read,
+            'created_at': notification.created_at.isoformat(),
+            'read_at': notification.read_at.isoformat() if notification.read_at else None
+        })
+    
+    return JsonResponse({
+        'notifications': notifications_data,
+        'unread_count': len([n for n in notifications_data if not n['is_read']])
+    })
+
+
+@csrf_exempt
+@jwt_login_required
+@require_http_methods(["POST"])
+def mark_notification_as_read(request, notification_id):
+    """Mark a specific notification as read."""
+    from .models import Notification
+    
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.read_at = timezone.now()
+        notification.save()
+        
+        return JsonResponse({'success': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({'error': 'Notification not found'}, status=404)
+
+
+@csrf_exempt
+@jwt_login_required
+@require_http_methods(["POST"])
+def mark_all_notifications_as_read(request):
+    """Mark all notifications as read for the current user."""
+    from .models import Notification
+    
+    Notification.objects.filter(user=request.user, is_read=False).update(
+        is_read=True,
+        read_at=timezone.now()
+    )
+    
+    return JsonResponse({'success': True})
+
+
+@csrf_exempt
+@jwt_login_required
 @require_roles('super_admin')
 @require_http_methods(["POST"])
 def add_user(request):
@@ -298,7 +467,8 @@ def add_user(request):
     })
 
 
-@login_required
+@csrf_exempt
+@jwt_login_required
 @require_roles('super_admin')
 @require_http_methods(["PUT"])
 def edit_user(request, user_id):
@@ -344,7 +514,8 @@ def edit_user(request, user_id):
     return JsonResponse({'message': 'User updated successfully'})
 
 
-@login_required
+@csrf_exempt
+@jwt_login_required
 @require_roles('super_admin')
 @require_http_methods(["DELETE"])
 def delete_user(request, user_id):
@@ -369,35 +540,36 @@ def delete_user(request, user_id):
     return JsonResponse({'message': 'User deleted successfully'})
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_login(request):
     """API login - returns user info for React frontend."""
     import json
-    
+
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
+
     username = data.get('username')
     password = data.get('password')
-    
+
     if not username or not password:
         return JsonResponse({'error': 'Username and password required'}, status=400)
-    
+
     user = authenticate(request, username=username, password=password)
-    
+
     if user is None:
         return JsonResponse({'error': 'Invalid credentials'}, status=401)
-    
+
     login(request, user)
-    
+
     try:
         profile = Profile.objects.get(user=user)
         role = profile.role
     except Profile.DoesNotExist:
         role = 'unknown'
-    
+
     return JsonResponse({
         'message': 'Login successful',
         'user': {

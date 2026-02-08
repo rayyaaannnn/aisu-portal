@@ -35,6 +35,7 @@ class Profile(models.Model):
     district = models.CharField(max_length=50, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     photo_url = models.CharField(max_length=500, blank=True, null=True)
+    last_activity = models.DateTimeField(auto_now=True)  # Track last activity
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
@@ -42,7 +43,7 @@ class Profile(models.Model):
 
 class Designation(models.Model):
     """Model to represent organizational roles/designations."""
-    
+
     LEVEL_CHOICES = (
         ('national', 'National'),
         ('state', 'State'),
@@ -50,25 +51,53 @@ class Designation(models.Model):
         ('mandal', 'Mandal'),
         ('college', 'College'),
     )
-    
+
     name = models.CharField(max_length=100, help_text="e.g., National President")
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
-    department = models.CharField(max_length=100, blank=True, null=True, 
+    department = models.CharField(max_length=100, blank=True, null=True,
                                    help_text="e.g., Social Media, Press, IT Cell, Legal")
-    description = models.TextField(blank=True, null=True, 
+    description = models.TextField(blank=True, null=True,
                                     help_text="Short summary of the role")
     responsibilities = models.TextField(help_text="List of responsibilities")
     authority = models.TextField(help_text="Authority and powers")
     accountability = models.TextField(help_text="Accountability and duties")
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, 
-                               blank=True, null=True, 
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL,
+                               blank=True, null=True,
                                related_name='children',
                                help_text="Parent designation for hierarchy")
-    
+
     class Meta:
         verbose_name = 'Designation'
         verbose_name_plural = 'Designations'
         ordering = ['level', 'name']
-    
+
     def __str__(self):
         return f"{self.get_level_display()} - {self.name}"
+
+
+class Notification(models.Model):
+    """Model to represent user notifications."""
+    
+    NOTIFICATION_TYPES = (
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('alert', 'Alert'),
+        ('system', 'System Message'),
+        ('update', 'Update'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='info')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Notification'
+        verbose_name_plural = 'Notifications'
+    
+    def __str__(self):
+        return f"{self.title} - {self.user.username}"

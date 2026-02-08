@@ -1,10 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import aisuLogo from './assets/aisu-logo.jpg';
+import notificationService from './services/notificationService';
 
 function Navigation({ user, isOpen, setIsOpen }) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const isCollapsed = !isOpen;
   const location = useLocation();
   const resolvedUser = React.useMemo(() => {
@@ -16,11 +20,51 @@ function Navigation({ user, isOpen, setIsOpen }) {
     }
   }, [user]);
 
+  // Load notifications when component mounts or when notifications dropdown is opened
+  useEffect(() => {
+    if (showNotifications) {
+      loadNotifications();
+    }
+  }, [showNotifications]);
+
+  const loadNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const data = await notificationService.getNotifications();
+      setNotifications(data.notifications);
+      setUnreadCount(data.unread_count);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     window.location.href = '/';
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+      // Refresh notifications after marking one as read
+      loadNotifications();
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      // Refresh notifications after marking all as read
+      loadNotifications();
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
 
   const getMenuItems = () => {
@@ -58,17 +102,7 @@ function Navigation({ user, isOpen, setIsOpen }) {
     }
   };
 
-  const getNotifications = () => {
-    return [
-      { id: 1, message: 'New update available', time: '2 hours ago', read: false },
-      { id: 2, message: 'Your profile was updated', time: '5 hours ago', read: false },
-      { id: 3, message: 'Welcome to AISU!', time: '1 day ago', read: true },
-    ];
-  };
-
   const menuItems = getMenuItems();
-  const notifications = getNotifications();
-  const unreadCount = notifications.filter(n => !n.read).length;
   const userRole = resolvedUser?.role?.replace('_', ' ').toUpperCase() || 'USER';
   const displayName =
     resolvedUser?.first_name || resolvedUser?.username || 'User';
@@ -151,7 +185,7 @@ function Navigation({ user, isOpen, setIsOpen }) {
 
         {!isCollapsed && (
           <div className="sidebar-notifications">
-            <button 
+            <button
               className="notification-button"
               onClick={() => setShowNotifications(!showNotifications)}
             >
@@ -161,7 +195,7 @@ function Navigation({ user, isOpen, setIsOpen }) {
                 <span className="notification-count">{unreadCount}</span>
               )}
             </button>
-            
+
             {showNotifications && (
               <div className="notifications-dropdown">
                 <div className="notifications-header">
@@ -169,13 +203,36 @@ function Navigation({ user, isOpen, setIsOpen }) {
                   <button onClick={() => setShowNotifications(false)}>×</button>
                 </div>
                 <div className="notifications-list">
-                  {notifications.map(notification => (
-                    <div key={notification.id} className={`notification-item ${!notification.read ? 'unread' : ''}`}>
-                      <p>{notification.message}</p>
-                      <span className="notification-time">{notification.time}</span>
+                  {isLoading ? (
+                    <div className="notification-item">
+                      <p>Loading notifications...</p>
                     </div>
-                  ))}
+                  ) : notifications.length === 0 ? (
+                    <div className="notification-item">
+                      <p>No notifications</p>
+                    </div>
+                  ) : (
+                    notifications.map(notification => (
+                      <div 
+                        key={notification.id} 
+                        className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
+                        onClick={() => handleMarkAsRead(notification.id)}
+                      >
+                        <p><strong>{notification.title}</strong><br/>{notification.message}</p>
+                        <span className="notification-time">
+                          {new Date(notification.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
+                {notifications.length > 0 && (
+                  <div className="notifications-footer">
+                    <button onClick={handleMarkAllAsRead} className="mark-all-read-button">
+                      Mark all as read
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -319,6 +376,27 @@ function Navigation({ user, isOpen, setIsOpen }) {
           top: 0;
           margin-left: 8px;
           width: 250px;
+        }
+        
+        .notifications-footer {
+          padding: 12px 16px;
+          border-top: 1px solid var(--slate-100);
+          background: var(--slate-50);
+        }
+        
+        .mark-all-read-button {
+          background: none;
+          border: none;
+          color: var(--blue-600);
+          cursor: pointer;
+          font-size: 12px;
+          text-decoration: underline;
+          padding: 0;
+          margin: 0;
+        }
+        
+        .mark-all-read-button:hover {
+          color: var(--blue-800);
         }
       `}</style>
     </nav>
