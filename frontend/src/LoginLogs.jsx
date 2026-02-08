@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { loginLogService } from '../services/loginLogService';
+import { loginLogService } from './services/loginLogService';
 import SimplePage from './SimplePage';
 import './LoginLogs.css';
 
