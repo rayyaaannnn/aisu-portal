@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Updates & Press Releases | AISU – All India Students Union</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Official announcements, press releases, events, and news updates from AISU – All India Students Union.">
+    <link href="img/favicon.ico" rel="icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Saira:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/aisu-custom.css" rel="stylesheet">
+    <style>
+        .press-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #eef0f5;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(.4, 0, .2, 1);
+            height: 100%;
+        }
+        .press-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            border-color: rgba(255,111,15,0.2);
+        }
+        .press-img {
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-light), #ffe8d6);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .press-category-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--primary);
+            color: #fff;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .press-body { padding: 20px; }
+        .press-date {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .press-body h5 {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .filter-btn {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            color: var(--dark);
+            padding: 7px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Bar -->
+    <div class="aisu-topbar d-none d-lg-block">
+        <div class="container-fluid px-5">
+            <div class="row align-items-center">
+                <div class="col-lg-7 text-white-50">
+                    <small><i class="fa fa-map-marker-alt me-2" style="color:var(--primary)"></i>Dubwaliya
+                        Yadavchapra, Chanpatia, West Champaran, Bihar – 845450</small>
+                    <small class="ms-4"><i class="fa fa-envelope me-2"
+                            style="color:var(--primary)"></i>aisu4india@gmail.com</small>
+                </div>
+                <div class="col-lg-5 text-end">
+                    <small class="text-white-50 me-2">Follow us:</small>
+                    <a class="text-white-50 ms-2" href="https://www.facebook.com/profile.php?id=100092878216816"
+                        target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a class="text-white-50 ms-3" href="https://twitter.com/Official_AISU" target="_blank"><i
+                            class="fab fa-twitter"></i></a>
+                    <a class="text-white-50 ms-3" href="https://www.linkedin.com/company/officialaisu/"
+                        target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    <a class="text-white-50 ms-3" href="https://instagram.com/aisu4india" target="_blank"><i
+                            class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg aisu-navbar sticky-top">
+        <div class="container-fluid px-4 px-lg-5">
+            <a href="index.html" class="navbar-brand">
+                <div class="brand-text"><span class="orange">AISU</span><span class="white">4India</span></div>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarMain">
+                <i class="bi bi-list text-white fs-2"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <div class="navbar-nav ms-auto align-items-lg-center gap-1">
+                    <a href="index.html" class="nav-link-custom">Home</a>
+                    <a href="about.html" class="nav-link-custom">About Us</a>
+                    <a href="team.html" class="nav-link-custom">Our Team</a>
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link-custom dropdown-toggle" data-bs-toggle="dropdown">Join Us</a>
+                        <div class="dropdown-menu">
+                            <a href="primary-membership.html" class="dropdown-item"><i class="bi bi-person-badge me-2"
+                                    style="color:var(--primary)"></i>Primary Membership</a>
+                            <a href="student-membership.html" class="dropdown-item"><i class="bi bi-mortarboard me-2"
+                                    style="color:var(--primary)"></i>Student Membership</a>
+                            <a href="affiliation.html" class="dropdown-item"><i class="bi bi-building me-2"
+                                    style="color:var(--primary)"></i>Organization Affiliation</a>
+                        </div>
+                    </div>
+                    <a href="competition.html" class="nav-link-custom">Competitions</a>
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link-custom dropdown-toggle" data-bs-toggle="dropdown">Initiatives</a>
+                        <div class="dropdown-menu">
+                            <a href="internship.html" class="dropdown-item"><i class="bi bi-briefcase me-2"
+                                    style="color:var(--primary)"></i>Internship</a>
+                            <a href="innovations.html" class="dropdown-item"><i class="bi bi-lightbulb me-2"
+                                    style="color:var(--primary)"></i>Innovation Cell (ICell)</a>
+                        </div>
+                    </div>
+                    <a href="complaint.html" class="nav-link-custom">Complaints</a>
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link-custom dropdown-toggle active" data-bs-toggle="dropdown">More</a>
+                        <div class="dropdown-menu">
+                            <a href="press.html" class="dropdown-item"><i class="bi bi-newspaper me-2" style="color:var(--primary)"></i>Updates &amp; Press</a>
+                            <a href="gallery.html" class="dropdown-item"><i class="bi bi-images me-2" style="color:var(--primary)"></i>Gallery &amp; Results</a>
+                            <a href="cert-verify.html" class="dropdown-item"><i class="bi bi-patch-check me-2" style="color:var(--primary)"></i>Verify Certificate</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="contact.html" class="dropdown-item"><i class="bi bi-envelope me-2" style="color:var(--primary)"></i>Contact Us</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex ms-3 gap-2 mt-3 mt-lg-0">
+                    <a href="login.html" class="btn-nav-login nav-link-custom"><i
+                            class="bi bi-person-circle me-1"></i>Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Hero -->
+    <div class="page-hero">
+        <div class="container text-center position-relative" style="z-index:1;">
+            <h1 class="display-5 fw-800 text-white mb-3" style="font-family:'Saira',sans-serif;">Press Releases &
+                <span style="color:var(--primary)">Updates</span>
+            </h1>
+            <p class="text-white-50 mb-3" style="max-width:580px; margin:0 auto;">Official announcements, event
+                information, press communications, and organizational news from AISU.</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0" style="--bs-breadcrumb-divider:'›';">
+                    <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                    <li class="breadcrumb-item active">Press & Updates</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Filter & Search -->
+    <section class="py-4" style="background:var(--light); border-bottom:1px solid #eef0f5;">
+        <div class="container">
+            <div class="row align-items-center g-3">
+                <div class="col-lg-8">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="filter-btn active" id="btn-all" onclick="filterPosts('all')">All</button>
+                        <button class="filter-btn" id="btn-announcement" onclick="filterPosts('announcement')">Announcements</button>
+                        <button class="filter-btn" id="btn-competition" onclick="filterPosts('competition')">Competitions</button>
+                        <button class="filter-btn" id="btn-event" onclick="filterPosts('event')">Events & Webinars</button>
+                        <button class="filter-btn" id="btn-press" onclick="filterPosts('press')">Press Statements</button>
+                        <button class="filter-btn" id="btn-achievement" onclick="filterPosts('achievement')">Achievements</button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0" placeholder="Search updates..." id="searchInput" oninput="searchPosts()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Posts Grid -->
+    <section class="py-5 py-lg-6">
+        <div class="container">
+            <div class="row g-4" id="pressGrid">
+
+                <!-- Post 1 -->
+                <div class="col-lg-4 col-md-6 reveal press-item" data-category="announcement">
+                    <div class="press-card">
+                        <div class="press-img" style="background:linear-gradient(135deg,#fff0e6,#ffe8d6);">
+                            <span style="font-size:4rem;">📣</span>
+                            <span class="press-category-tag">Announcement</span>
+                        </div>
+                        <div class="press-body">
+                            <div class="press-date"><i class="bi bi-calendar3"></i> March 2026</div>
+                            <h5>AISU Launches New Student Membership Drive 2026</h5>
+                            <p class="small text-muted mb-3" style="line-height:1.6;">AISU announces the launch of its 2026 student membership campaign. Students across India can now register for free and gain access to all competitions and organizational activities for one full year.</p>
+                            <a href="student-membership.html" class="btn-primary-custom" style="font-size:0.82rem; padding:8px 16px;">Register Now <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post 2 -->
+                <div class="col-lg-4 col-md-6 reveal press-item" data-category="competition">
+                    <div class="press-card">
+                        <div class="press-img" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">
+                            <span style="font-size:4rem;">🏆</span>
+                            <span class="press-category-tag" style="background:#f59e0b;">Competition</span>
+                        </div>
+                        <div class="press-body">
+                            <div class="press-date"><i class="bi bi-calendar3"></i> March 2026</div>
+                            <h5>National Essay Competition 2026 – Now Open</h5>
+                            <p class="small text-muted mb-3" style="line-height:1.6;">AISU invites students across India to participate in the National Essay Competition 2026. Theme: "The Future of Education in India". Submit your entries and win recognition and certificates.</p>
+                            <a href="competition.html" class="btn-primary-custom" style="font-size:0.82rem; padding:8px 16px; background:linear-gradient(135deg,#f59e0b,#d97706);">View Competition <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post 3 -->
+                <div class="col-lg-4 col-md-6 reveal press-item" data-category="event">
+                    <div class="press-card">
+                        <div class="press-img" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);">
+                            <span style="font-size:4rem;">🎤</span>
+                            <span class="press-category-tag" style="background:#3b82f6;">Webinar</span>
+                        </div>
+                        <div class="press-body">
+                            <div class="press-date"><i class="bi bi-calendar3"></i> February 2026</div>
+                            <h5>National Leadership Webinar – Student Empowerment 2026</h5>
+                            <p class="small text-muted mb-3" style="line-height:1.6;">AISU conducted a national-level webinar on student leadership and empowerment, featuring speakers from across India. The event brought together students from 15+ states.</p>
+                            <a href="#" class="btn-primary-custom" style="font-size:0.82rem; padding:8px 16px; background:linear-gradient(135deg,#3b82f6,#2563eb);">Read More <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post 4 -->
+                <div class="col-lg-4 col-md-6 reveal press-item" data-category="achievement">
+                    <div class="press-card">
+                        <div class="press-img" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);">
+                            <span style="font-size:4rem;">🌟</span>
+                            <span class="press-category-tag" style="background:#22c55e;">Achievement</span>
+                        </div>
+                        <div class="press-body">
+                            <div class="press-date"><i class="bi bi-calendar3"></i> January 2026</div>
+                            <h5>AISU Expands to 28 States – Milestone Achievement</h5>
+                            <p class="small text-muted mb-3" style="line-height:1.6;">AISU proudly announces its expansion to all 28 states of India with over 5,000 active members. This milestone represents the organization's commitment to national student empowerment.</p>
+                            <a href="about.html" class="btn-primary-custom" style="font-size:0.82rem; padding:8px 16px; background:linear-gradient(135deg,#22c55e,#16a34a);">Learn More <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post 5 -->
+                <div class="col-lg-4 col-md-6 reveal press-item" data-category="press">
+                    <div class="press-card">
+                        <div class="press-img" style="background:linear-gradient(135deg,#f3e8ff,#e9d5ff);">
+                            <span style="font-size:4rem;">📰</span>
+                            <span class="press-category-tag" style="background:#8b5cf6;">Press Statement</span>
+                        </div>
+                        <div class="press-body">
+                            <div class="press-date"><i class="bi bi-calendar3"></i> January 2026</div>
+                            <h5>AISU Issues Statement on Education Reform Initiatives</h5>
+                            <p class="small text-muted mb-3" style="line-height:1.6;">The All India Students Union issues a formal press statement calling for comprehensive education reform initiatives to ensure quality and accessible education for all students in India.</p>
+                            <a href="#" class="btn-primary-custom" style="font-size:0.82rem; padding:8px 16px; background:linear-gradient(135deg,#8b5cf6,#7c3aed);">Read Statement <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post 6 -->
+                <div class="col-lg-4 col-md-6 reveal press-item" data-category="announcement">
+                    <div class="press-card">
+                        <div class="press-img" style="background:linear-gradient(135deg,#fef9c3,#fef08a);">
+                            <span style="font-size:4rem;">🤝</span>
+                            <span class="press-category-tag">Announcement</span>
+                        </div>
+                        <div class="press-body">
+                            <div class="press-date"><i class="bi bi-calendar3"></i> December 2025</div>
+                            <h5>AISU Signs MoU with InternXpro Pvt. Ltd. & SkillChase</h5>
+                            <p class="small text-muted mb-3" style="line-height:1.6;">AISU has entered into official memorandums of understanding with InternXpro Pvt. Ltd. and SkillChase for training, internships, and student skill development programs across India.</p>
+                            <a href="about.html" class="btn-primary-custom" style="font-size:0.82rem; padding:8px 16px;">Read More <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- No results message -->
+            <div id="noResults" class="text-center py-5" style="display:none;">
+                <div style="font-size:4rem; margin-bottom:16px;">📭</div>
+                <h5 class="text-muted">No updates found matching your search.</h5>
+                <button class="filter-btn active mt-3" onclick="filterPosts('all')">Show All Updates</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Subscribe Section -->
+    <section class="py-5" style="background:var(--light);">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 text-center reveal">
+                    <div class="section-badge">Stay Updated</div>
+                    <h2 class="section-title">Never Miss an <span class="accent">Update</span></h2>
+                    <div class="section-divider mx-auto"></div>
+                    <p class="text-muted mt-3 mb-4">Subscribe to receive organizational announcements, new competition launches, events, and important news directly in your inbox.</p>
+                    <div class="p-4 rounded-4 bg-white shadow-sm">
+                        <form class="d-flex gap-2" id="subscribeForm" onsubmit="handleSubscribe(event)">
+                            <input type="email" class="form-control" placeholder="Enter your email address" required>
+                            <button type="submit" class="btn-primary-custom" style="white-space:nowrap; padding:10px 20px;">Subscribe</button>
+                        </form>
+                        <p class="small text-muted mt-2 mb-0">We respect your privacy. Unsubscribe at any time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="aisu-footer">
+        <div class="container py-4">
+            <div class="row g-5">
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-brand mb-3"><span class="orange">AISU</span><span class="white">4India</span></div>
+                    <p style="font-size:0.9rem; line-height:1.7;">An initiative of Federation of Indian Youth
+                        Association, registered under the Indian Trust Act, 1882.</p>
+                    <div class="footer-social mt-3">
+                        <a href="https://twitter.com/Official_AISU" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a href="https://instagram.com/aisu4india" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=100092878216816" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://youtube.com/@official_AISU" target="_blank"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.linkedin.com/company/officialaisu/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Quick Links</h5>
+                    <a href="index.html" class="footer-link">Home</a>
+                    <a href="about.html" class="footer-link">About Us</a>
+                    <a href="team.html" class="footer-link">Our Team</a>
+                    <a href="competition.html" class="footer-link">Competitions</a>
+                    <a href="complaint.html" class="footer-link">Complaints</a>
+                    <a href="contact.html" class="footer-link">Contact Us</a>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Initiatives</h5>
+                    <a href="primary-membership.html" class="footer-link">Primary Member</a>
+                    <a href="student-membership.html" class="footer-link">Student Member</a>
+                    <a href="internship.html" class="footer-link">Internship</a>
+                    <a href="innovations.html" class="footer-link">Innovation Cell</a>
+                    <a href="affiliation.html" class="footer-link">Affiliation</a>
+                    <a href="login.html" class="footer-link">Login</a>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Resources</h5>
+                    <a href="press.html" class="footer-link">Press & Updates</a>
+                    <a href="gallery.html" class="footer-link">Gallery & Results</a>
+                    <a href="cert-verify.html" class="footer-link">Verify Certificate</a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5>Contact</h5>
+                    <p class="small mb-2"><i class="bi bi-geo-alt-fill me-2" style="color:var(--primary)"></i>Dubwaliya
+                        Yadavchapra, Chanpatia, West Champaran, Bihar – 845450</p>
+                    <p class="small mb-2"><i class="bi bi-telephone-fill me-2" style="color:var(--primary)"></i>+91 80748 53717</p>
+                    <p class="small mb-2"><i class="bi bi-envelope-fill me-2" style="color:var(--primary)"></i>aisu4india@gmail.com</p>
+                    <p class="small"><i class="bi bi-envelope-fill me-2" style="color:var(--primary)"></i>vicepresident.aisu@gmail.com</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start">&copy; 2026 <a href="index.html"
+                            style="color:var(--primary); text-decoration:none;">AISU4India</a>. All Rights Reserved.
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">All India Students Union – Arise • Awake • Empower
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <a href="#" class="scroll-top" id="scrollTop"><i class="bi bi-arrow-up"></i></a>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/aisu-main.js"></script>
+    <script>
+        function filterPosts(category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + category) && document.getElementById('btn-' + category).classList.add('active');
+            if (category === 'all') document.getElementById('btn-all').classList.add('active');
+            const items = document.querySelectorAll('.press-item');
+            let visible = 0;
+            items.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = '';
+                    visible++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+        }
+        function searchPosts() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.press-item');
+            let visible = 0;
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(q)) { item.style.display = ''; visible++; }
+                else item.style.display = 'none';
+            });
+            document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+        }
+        function handleSubscribe(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = '✓ Subscribed!';
+            btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+            setTimeout(() => { btn.innerHTML = 'Subscribe'; btn.style.background = ''; e.target.reset(); }, 3000);
+        }
+    </script>
+</body>
+
+</html>

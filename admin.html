@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin Portal | AISU4India</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Saira:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#FF6F0F;--dark:#0d1b2a;--dark2:#1a2d42;--sidebar:240px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f0f2f5;color:#2d3748;}
+/* Sidebar */
+#sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,var(--dark) 0%,var(--dark2) 100%);z-index:1000;display:flex;flex-direction:column;transition:.3s;}
+.sidebar-brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-brand .name{font-family:'Saira',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;}
+.sidebar-brand .name span{color:var(--primary);}
+.sidebar-brand small{color:rgba(255,255,255,.45);font-size:.72rem;}
+.nav-section{padding:14px 16px 4px;color:rgba(255,255,255,.3);font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.sidebar-link{display:flex;align-items:center;gap:11px;padding:11px 20px;color:rgba(255,255,255,.7);text-decoration:none;font-size:.88rem;font-weight:500;transition:.2s;border-left:3px solid transparent;}
+.sidebar-link:hover,.sidebar-link.active{color:#fff;background:rgba(255,111,15,.12);border-left-color:var(--primary);}
+.sidebar-link i{width:18px;text-align:center;font-size:.95rem;}
+.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);}
+/* Main */
+#main{margin-left:var(--sidebar);min-height:100vh;display:flex;flex-direction:column;}
+.top-bar{background:#fff;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.07);position:sticky;top:0;z-index:100;}
+.top-bar h5{font-family:'Saira',sans-serif;font-weight:700;margin:0;font-size:1.05rem;}
+.top-bar .user-info{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;}
+.content{padding:26px 28px;flex:1;}
+/* Cards */
+.stat-card{background:#fff;border-radius:14px;padding:22px 24px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:16px;transition:.25s;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.stat-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.stat-num{font-family:'Saira',sans-serif;font-size:1.9rem;font-weight:800;line-height:1;}
+.stat-label{font-size:.8rem;color:#6b7280;margin-top:3px;}
+/* Table */
+.admin-table{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.admin-table table{width:100%;border-collapse:collapse;}
+.admin-table th{background:var(--dark);color:#fff;padding:12px 16px;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.admin-table td{padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:.875rem;}
+.admin-table tr:last-child td{border:0;}
+.admin-table tr:hover td{background:#fafafa;}
+/* Section panel */
+.panel{display:none;}
+.panel.active{display:block;}
+/* Badge */
+.badge-status{padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;}
+.s-active{background:#dcfce7;color:#166534;}
+.s-pending{background:#fef9c3;color:#854d0e;}
+.s-rejected{background:#fee2e2;color:#991b1b;}
+.s-review{background:#dbeafe;color:#1e40af;}
+/* Form card */
+.form-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+/* Tabs */
+.admin-tabs .nav-link{border:0;border-bottom:3px solid transparent;border-radius:0;color:#6b7280;font-weight:500;font-size:.875rem;padding:10px 16px;}
+.admin-tabs .nav-link.active{color:var(--primary);border-bottom-color:var(--primary);}
+/* Upload zone */
+.upload-zone{border:2px dashed #d1d5db;border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:.2s;}
+.upload-zone:hover{border-color:var(--primary);background:#fff8f4;}
+/* Responsive */
+@media(max-width:768px){#sidebar{transform:translateX(-100%);}#sidebar.open{transform:translateX(0);}#main{margin-left:0;}}
+/* Login overlay removed — auth handled via login.html */
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-brand">
+    <div class="name"><span>AISU</span>4India</div>
+    <small>Administration Panel v2.1</small>
+  </div>
+  <div style="overflow-y:auto;flex:1;">
+    <div class="nav-section">Overview</div>
+    <a href="#" class="sidebar-link active" data-panel="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <div class="nav-section">Members</div>
+    <a href="#" class="sidebar-link" data-panel="primary-members"><i class="bi bi-person-badge"></i> Primary Members</a>
+    <a href="#" class="sidebar-link" data-panel="student-members"><i class="bi bi-mortarboard"></i> Student Members</a>
+    <div class="nav-section">Activities</div>
+    <a href="#" class="sidebar-link" data-panel="complaints"><i class="bi bi-shield-exclamation"></i> Complaints</a>
+    <a href="#" class="sidebar-link" data-panel="competitions"><i class="bi bi-trophy"></i> Competitions</a>
+    <a href="#" class="sidebar-link" data-panel="internships"><i class="bi bi-briefcase"></i> Internships</a>
+    <a href="#" class="sidebar-link" data-panel="icell"><i class="bi bi-lightbulb"></i> Innovation Cell</a>
+    <a href="#" class="sidebar-link" data-panel="affiliations"><i class="bi bi-building"></i> Affiliations</a>
+    <div class="nav-section">Certificates</div>
+    <a href="#" class="sidebar-link" data-panel="cert-templates"><i class="bi bi-file-earmark-richtext"></i> Templates</a>
+    <a href="#" class="sidebar-link" data-panel="cert-generate"><i class="bi bi-patch-check"></i> Generate / Issue</a>
+    <div class="nav-section">Quiz</div>
+    <a href="#" class="sidebar-link" data-panel="quiz-rooms"><i class="bi bi-controller"></i> Quiz Rooms</a>
+    <div class="nav-section">Content</div>
+    <a href="#" class="sidebar-link" data-panel="announcements"><i class="bi bi-megaphone"></i> Announcements</a>
+    <a href="#" class="sidebar-link" data-panel="press"><i class="bi bi-newspaper"></i> Press</a>
+    <a href="#" class="sidebar-link" data-panel="gallery-mgmt"><i class="bi bi-images"></i> Gallery</a>
+    <a href="#" class="sidebar-link" data-panel="comp-results"><i class="bi bi-award"></i> Results</a>
+    <a href="#" class="sidebar-link" data-panel="publications"><i class="bi bi-book"></i> Publications</a>
+    <a href="#" class="sidebar-link" data-panel="cert-records"><i class="bi bi-card-list"></i> Cert Records</a>
+    <a href="#" class="sidebar-link" data-panel="internship-admin"><i class="bi bi-briefcase-fill"></i> Internship Status</a>
+    <div class="nav-section">System</div>
+    <a href="#" class="sidebar-link" data-panel="users"><i class="bi bi-people"></i> Admin Users</a>
+  </div>
+  <div class="sidebar-bottom">
+    <a href="index.html" class="sidebar-link" style="padding:8px 0;"><i class="bi bi-house"></i> Back to Website</a>
+    <a href="#" id="logout-link" class="sidebar-link" style="padding:8px 0;color:rgba(255,80,80,.8);"><i class="bi bi-box-arrow-left"></i> Logout</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="top-bar">
+    <h5 id="page-title">Dashboard</h5>
+    <div class="user-info">
+      <div class="avatar" id="user-avatar">A</div>
+      <div><div style="font-weight:600;font-size:.875rem;" id="user-name">Admin</div><div style="font-size:.75rem;color:#6b7280;" id="user-role">National</div></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="row g-3 mb-4" id="stat-cards">
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#fff0e6;color:var(--primary);"><i class="bi bi-person-badge-fill"></i></div><div><div class="stat-num" id="cnt-primary">—</div><div class="stat-label">Primary Members</div></div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#eff6ff;color:#3b82f6;"><i class="bi bi-mortarboard-fill"></i></div><div><div class="stat-num" id="cnt-student">—</div><div class="stat-label">Student Members</div></div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#fef9c3;color:#ca8a04;"><i class="bi bi-exclamation-triangle-fill"></i></div><div><div class="stat-num" id="cnt-complaints">—</div><div class="stat-label">Complaints</div></div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#f0fdf4;color:#16a34a;"><i class="bi bi-patch-check-fill"></i></div><div><div class="stat-num" id="cnt-certs">—</div><div class="stat-label">Certificates Issued</div></div></div></div>
+      </div>
+      <div class="row g-3">
+        <div class="col-lg-8"><div class="admin-table"><div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:.9rem;">Recent Applications</div><table><thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody id="recent-apps"><tr><td colspan="6" class="text-center text-muted py-3">Loading...</td></tr></tbody></table></div></div>
+        <div class="col-lg-4"><div class="form-card"><div style="font-weight:600;font-size:.9rem;margin-bottom:14px;"><i class="bi bi-bar-chart-fill me-2" style="color:var(--primary);"></i>Quick Stats</div><div id="quick-stats-body"><p class="text-muted small">Loading...</p></div></div></div>
+      </div>
+    </div>
+
+    <!-- PRIMARY MEMBERS -->
+    <div class="panel" id="panel-primary-members">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-700 mb-0">Primary Members</h6>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm" id="pm-search" placeholder="Search name / ID..." style="width:220px;">
+          <select class="form-select form-select-sm" id="pm-status" style="width:130px;"><option value="">All Status</option><option>Active</option><option>Pending</option><option>Rejected</option></select>
+        </div>
+      </div>
+      <div class="admin-table"><table><thead><tr><th>Member ID</th><th>Name</th><th>State</th><th>Designation</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="pm-body"><tr><td colspan="7" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- STUDENT MEMBERS -->
+    <div class="panel" id="panel-student-members">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-700 mb-0">Student Members</h6>
+        <input type="text" class="form-control form-control-sm" id="sm-search" placeholder="Search..." style="width:220px;">
+      </div>
+      <div class="admin-table"><table><thead><tr><th>Student ID</th><th>Name</th><th>Institution</th><th>State</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead><tbody id="sm-body"><tr><td colspan="7" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- COMPLAINTS -->
+    <div class="panel" id="panel-complaints">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-700 mb-0">Complaint Portal</h6>
+        <select class="form-select form-select-sm" id="comp-status" style="width:150px;"><option value="">All Status</option><option>Pending</option><option>Under Review</option><option>Resolved</option><option>Closed</option></select>
+      </div>
+      <div class="admin-table"><table><thead><tr><th>Complaint ID</th><th>Category</th><th>Filed By</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody id="complaints-body"><tr><td colspan="6" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- COMPETITIONS -->
+    <div class="panel" id="panel-competitions">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-700 mb-0">Competitions</h6>
+        <button class="btn btn-sm btn-warning fw-600" style="background:var(--primary);border:0;color:#fff;" data-bs-toggle="modal" data-bs-target="#addCompModal"><i class="bi bi-plus-lg me-1"></i>New Competition</button>
+      </div>
+      <div class="admin-table"><table><thead><tr><th>Title</th><th>Category</th><th>Deadline</th><th>Registrations</th><th>Status</th><th>Actions</th></tr></thead><tbody id="comp-body"><tr><td colspan="6" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- INTERNSHIPS -->
+    <div class="panel" id="panel-internships">
+      <h6 class="fw-700 mb-3">Internship Applications</h6>
+      <div class="admin-table"><table><thead><tr><th>Applicant</th><th>Student ID</th><th>Domain</th><th>Status</th><th>Applied</th><th>Action</th></tr></thead><tbody id="intern-body"><tr><td colspan="6" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- INNOVATION CELL -->
+    <div class="panel" id="panel-icell">
+      <h6 class="fw-700 mb-3">Innovation Proposals</h6>
+      <div class="admin-table"><table><thead><tr><th>Proposal ID</th><th>Title</th><th>Category</th><th>Submitted By</th><th>Status</th><th>Action</th></tr></thead><tbody id="icell-body"><tr><td colspan="6" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- AFFILIATIONS -->
+    <div class="panel" id="panel-affiliations">
+      <h6 class="fw-700 mb-3">Organization Affiliations</h6>
+      <div class="admin-table"><table><thead><tr><th>Affiliation ID</th><th>Organization</th><th>State</th><th>Type</th><th>Status</th><th>Action</th></tr></thead><tbody id="aff-body"><tr><td colspan="6" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- CERT TEMPLATES -->
+    <div class="panel" id="panel-cert-templates">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-700 mb-0">Certificate Templates</h6>
+        <button class="btn btn-sm" style="background:var(--primary);color:#fff;border:0;" onclick="document.getElementById('tpl-upload-section').scrollIntoView({behavior:'smooth'})"><i class="bi bi-upload me-1"></i>Upload Template</button>
+      </div>
+      <div class="row g-3 mb-4" id="tpl-list"><div class="col-12 text-muted">Loading templates...</div></div>
+      <div class="form-card" id="tpl-upload-section">
+        <h6 class="fw-700 mb-3"><i class="bi bi-cloud-upload me-2" style="color:var(--primary);"></i>Upload New Template</h6>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label small fw-600">Template Name *</label><input type="text" class="form-control" id="tpl-name" placeholder="e.g. Essay Competition 2026"></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Program Code *</label><input type="text" class="form-control" id="tpl-code" placeholder="ESSAY" style="text-transform:uppercase;"></div>
+          <div class="col-md-5"><label class="form-label small fw-600">Description</label><input type="text" class="form-control" id="tpl-desc" placeholder="Optional description"></div>
+          <div class="col-12">
+            <label class="form-label small fw-600">Template File (DOCX, PDF, PNG, JPG) *</label>
+            <div class="upload-zone" id="tpl-drop-zone" onclick="document.getElementById('tpl-file-input').click()">
+              <i class="bi bi-file-earmark-richtext" style="font-size:2rem;color:#9ca3af;"></i>
+              <div class="mt-2 fw-600 small">Click to browse or drag & drop</div>
+              <div class="text-muted" style="font-size:.8rem;">Supported: .docx .pdf .pptx .png .jpg<br>Use {{CertificateNo}} {{ParticipantName}} {{Program}} {{Date}} as placeholders</div>
+              <div id="tpl-file-name" class="mt-2 small text-success fw-600"></div>
+            </div>
+            <input type="file" id="tpl-file-input" accept=".docx,.pdf,.pptx,.png,.jpg,.jpeg" style="display:none;">
+          </div>
+          <div class="col-12"><button class="btn fw-600" style="background:var(--primary);color:#fff;border:0;" id="tpl-upload-btn">Upload Template</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATE CERTIFICATES -->
+    <div class="panel" id="panel-cert-generate">
+      <div class="form-card mb-4">
+        <h6 class="fw-700 mb-3"><i class="bi bi-patch-check me-2" style="color:var(--primary);"></i>Generate Certificates</h6>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label small fw-600">Select Template</label><select class="form-select" id="gen-tpl-id"><option value="">-- Choose Template --</option></select></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Program Code</label><input type="text" class="form-control" id="gen-prog-code" placeholder="ESSAY"></div>
+          <div class="col-md-5"><label class="form-label small fw-600">Mode</label><select class="form-select" id="gen-mode"><option value="manual">Manual — Enter participants below</option><option value="excel">Excel Import</option></select></div>
+        </div>
+        <div id="gen-manual-section" class="mt-3">
+          <label class="form-label small fw-600">Participants (one per line: Name, Email, Program)</label>
+          <textarea class="form-control" id="gen-participants" rows="5" placeholder="Ravi Kumar, ravi@email.com, Essay Competition 2026&#10;Priya Singh, priya@email.com, Essay Competition 2026"></textarea>
+        </div>
+        <div id="gen-excel-section" class="mt-3 d-none">
+          <div class="upload-zone" onclick="document.getElementById('gen-excel-input').click()">
+            <i class="bi bi-file-earmark-spreadsheet" style="font-size:2rem;color:#16a34a;"></i>
+            <div class="mt-2 fw-600 small">Click to upload Excel (.xlsx)</div>
+            <div class="text-muted" style="font-size:.8rem;">Columns: Name, Email, Program</div>
+            <div id="gen-excel-name" class="mt-2 small text-success fw-600"></div>
+          </div>
+          <input type="file" id="gen-excel-input" accept=".xlsx,.xls,.csv" style="display:none;">
+          <div class="mt-2 d-none" id="gen-preview-wrap"><h6 class="small fw-600 mt-3">Preview <span id="gen-preview-count"></span> participants</h6><div class="admin-table"><table><thead><tr id="gen-preview-head"></tr></thead><tbody id="gen-preview-body"></tbody></table></div></div>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+          <button class="btn fw-600" style="background:var(--primary);color:#fff;border:0;" id="gen-certs-btn">Generate Certificates</button>
+          <div id="gen-result" class="small align-self-center text-success fw-600"></div>
+        </div>
+      </div>
+      <div class="admin-table"><div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:.9rem;">Issued Certificates</div><table><thead><tr><th>Cert No.</th><th>Name</th><th>Program</th><th>Issued On</th><th>Download</th></tr></thead><tbody id="certs-body"><tr><td colspan="5" class="text-center py-3 text-muted">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- QUIZ ROOMS -->
+    <div class="panel" id="panel-quiz-rooms">
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div class="form-card">
+            <h6 class="fw-700 mb-3"><i class="bi bi-controller me-2" style="color:var(--primary);"></i>Create Quiz Room</h6>
+            <div class="mb-2"><label class="form-label small fw-600">Room Name</label><input type="text" class="form-control" id="qr-name" placeholder="e.g. GK Quiz Round 1"></div>
+            <div class="mb-2"><label class="form-label small fw-600">Max Teams</label><input type="number" class="form-control" id="qr-teams" value="10" min="2" max="50"></div>
+            <div class="mb-2"><label class="form-label small fw-600">Time Limit (minutes)</label><input type="number" class="form-control" id="qr-time" value="30"></div>
+            <div class="mb-3">
+              <label class="form-label small fw-600">Questions (JSON Array)</label>
+              <textarea class="form-control" id="qr-questions" rows="6" placeholder='[{"text":"Q1?","options":["A","B","C","D"],"correct_answer":"A","points":10,"time_limit":30}]'></textarea>
+            </div>
+            <button class="btn fw-600 w-100" style="background:var(--primary);color:#fff;border:0;" id="create-room-btn">Create Room</button>
+            <div id="room-created-info" class="mt-3 d-none" style="background:#f0fdf4;border-radius:8px;padding:14px;">
+              <div class="small fw-600 text-success mb-1">Room Created!</div>
+              <div>Room Code: <strong id="room-code-display" style="font-size:1.4rem;letter-spacing:.1em;color:var(--primary);"></strong></div>
+              <a id="room-join-link" href="#" target="_blank" class="btn btn-sm mt-2" style="background:var(--dark);color:#fff;border:0;">Open Room &rarr;</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="admin-table">
+            <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:.9rem;">Active Rooms</div>
+            <table><thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Participants</th><th>Action</th></tr></thead><tbody id="rooms-body"><tr><td colspan="5" class="text-center py-3 text-muted">No active rooms</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="panel" id="panel-announcements">
+      <div class="form-card mb-4">
+        <h6 class="fw-700 mb-3"><i class="bi bi-megaphone me-2" style="color:var(--primary);"></i>Post Announcement</h6>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label small fw-600">Title *</label><input type="text" class="form-control" id="ann-title" placeholder="Announcement title"></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Type</label><select class="form-select" id="ann-type"><option>General</option><option>Competition</option><option>Membership</option><option>Event</option><option>Important</option></select></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Link (optional)</label><input type="text" class="form-control" id="ann-link" placeholder="https://..."></div>
+          <div class="col-12"><label class="form-label small fw-600">Content *</label><textarea class="form-control" id="ann-content" rows="3" placeholder="Announcement details..."></textarea></div>
+          <div class="col-12"><button class="btn fw-600" style="background:var(--primary);color:#fff;border:0;" id="ann-post-btn">Post Announcement</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESS / GALLERY -->
+    <div class="panel" id="panel-press">
+      <div class="form-card">
+        <h6 class="fw-700 mb-3"><i class="bi bi-newspaper me-2" style="color:var(--primary);"></i>Add Press Release / Gallery Item</h6>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label small fw-600">Title *</label><input type="text" class="form-control" id="press-title" placeholder="Press release title"></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Type</label><select class="form-select" id="press-type"><option>Press Release</option><option>Gallery</option><option>Competition Result</option><option>Event</option></select></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Source</label><input type="text" class="form-control" id="press-source" placeholder="NewTapWorld.in"></div>
+          <div class="col-12"><label class="form-label small fw-600">Content</label><textarea class="form-control" id="press-content" rows="3"></textarea></div>
+          <div class="col-12"><button class="btn fw-600" style="background:var(--primary);color:#fff;border:0;" id="press-post-btn">Publish</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS (Admin accounts) -->
+    <div class="panel" id="panel-users">
+      <div class="form-card mb-4">
+        <h6 class="fw-700 mb-3"><i class="bi bi-person-plus me-2" style="color:var(--primary);"></i>Add Admin User</h6>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label small fw-600">Full Name *</label><input type="text" class="form-control" id="new-user-name" placeholder="Full Name"></div>
+          <div class="col-md-4"><label class="form-label small fw-600">Email *</label><input type="email" class="form-control" id="new-user-email" placeholder="email@domain.com"></div>
+          <div class="col-md-4"><label class="form-label small fw-600">Role</label><select class="form-select" id="new-user-role"><option value="national">National</option><option value="state">State</option><option value="district">District</option></select></div>
+          <div class="col-md-4"><label class="form-label small fw-600">Password *</label><input type="password" class="form-control" id="new-user-pass" placeholder="Min 8 chars"></div>
+          <div class="col-12"><button class="btn fw-600" style="background:var(--primary);color:#fff;border:0;" id="add-user-btn">Create Admin User</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Add Competition Modal -->
+<div class="modal fade" id="addCompModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-700">New Competition</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label small fw-600">Title *</label><input type="text" class="form-control" id="nc-title" placeholder="Competition title"></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Category</label><select class="form-select" id="nc-category"><option>Essay Writing</option><option>Painting</option><option>Poster Design</option><option>Video</option><option>Quiz</option><option>General</option></select></div>
+          <div class="col-md-3"><label class="form-label small fw-600">Last Date</label><input type="date" class="form-control" id="nc-deadline"></div>
+          <div class="col-12"><label class="form-label small fw-600">Description *</label><textarea class="form-control" id="nc-desc" rows="3"></textarea></div>
+          <div class="col-md-4"><label class="form-label small fw-600">1st Prize</label><input type="text" class="form-control" id="nc-p1" placeholder="₹5,000 + Certificate"></div>
+          <div class="col-md-4"><label class="form-label small fw-600">2nd Prize</label><input type="text" class="form-control" id="nc-p2" placeholder="₹3,000 + Certificate"></div>
+          <div class="col-md-4"><label class="form-label small fw-600">3rd Prize</label><input type="text" class="form-control" id="nc-p3" placeholder="₹1,000 + Certificate"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button class="btn btn-sm fw-600" style="background:var(--primary);color:#fff;border:0;" id="nc-submit-btn">Create Competition</button></div>
+    </div>
+  </div>
+
+    <!-- GALLERY MANAGEMENT -->
+    <div class="panel" id="panel-gallery-mgmt">
+      <h5 class="panel-title">Gallery Management</h5>
+      <div class="card mb-3"><div class="card-body">
+        <h6>Add Gallery Item</h6>
+        <div class="row g-2 mb-2">
+          <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="gl-title" placeholder="Title *"></div>
+          <div class="col-md-3"><select class="form-control form-control-sm" id="gl-cat"><option value="">Category *</option><option value="event">Event</option><option value="results">Results</option><option value="publications">Publications</option></select></div>
+          <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="gl-date" placeholder="Event Date"></div>
+          <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="addGalleryItem()">Add</button></div>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-6"><input type="file" class="form-control form-control-sm" id="gl-img" accept="image/*"></div>
+          <div class="col-md-6"><input type="text" class="form-control form-control-sm" id="gl-desc" placeholder="Description"></div>
+        </div>
+        <div id="gl-msg" class="small mt-2"></div>
+      </div></div>
+      <div class="card"><div class="card-body">
+        <h6>Gallery Items</h6>
+        <div id="gallery-list"><div class="text-muted small">Loading…</div></div>
+      </div></div>
+    </div>
+
+    <!-- COMPETITION RESULTS -->
+    <div class="panel" id="panel-comp-results">
+      <h5 class="panel-title">Competition Results</h5>
+      <div class="card mb-3"><div class="card-body">
+        <h6>Publish Result</h6>
+        <div class="row g-2 mb-2">
+          <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="cr-comp" placeholder="Competition Name *"></div>
+          <div class="col-md-2"><select class="form-control form-control-sm" id="cr-pos"><option value="">Position</option><option>Winner</option><option>Runner-up</option><option>Merit</option><option>Special Recognition</option></select></div>
+          <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="cr-name" placeholder="Winner Name *"></div>
+          <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="cr-inst" placeholder="Institution"></div>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="cr-state" placeholder="State"></div>
+          <div class="col-md-5"><input type="text" class="form-control form-control-sm" id="cr-desc" placeholder="Short description"></div>
+          <div class="col-md-2"><input type="file" class="form-control form-control-sm" id="cr-photo" accept="image/*"></div>
+          <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="addCompResult()">Publish</button></div>
+        </div>
+        <div id="cr-msg" class="small mt-2"></div>
+      </div></div>
+      <div class="card"><div class="card-body">
+        <h6>Published Results</h6>
+        <div id="comp-results-list"><div class="text-muted small">Loading…</div></div>
+      </div></div>
+    </div>
+
+    <!-- PUBLICATIONS -->
+    <div class="panel" id="panel-publications">
+      <h5 class="panel-title">Publications</h5>
+      <div class="card mb-3"><div class="card-body">
+        <h6>Add Publication</h6>
+        <div class="row g-2 mb-2">
+          <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="pub-title" placeholder="Title *"></div>
+          <div class="col-md-2"><select class="form-control form-control-sm" id="pub-type"><option value="">Type *</option><option value="essay">Essay</option><option value="artwork">Artwork</option><option value="article">Article</option></select></div>
+          <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="pub-author" placeholder="Author Name"></div>
+          <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="pub-comp" placeholder="Competition Name"></div>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="pub-inst" placeholder="Institution"></div>
+          <div class="col-md-3"><input type="file" class="form-control form-control-sm" id="pub-file"></div>
+          <div class="col-md-3"><input type="text" class="form-control form-control-sm" id="pub-imgurl" placeholder="Image URL (optional)"></div>
+          <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="addPublication()">Publish</button></div>
+        </div>
+        <div id="pub-msg" class="small mt-2"></div>
+      </div></div>
+      <div class="card"><div class="card-body">
+        <h6>All Publications</h6>
+        <div id="publications-list"><div class="text-muted small">Loading…</div></div>
+      </div></div>
+    </div>
+
+    <!-- CERTIFICATE RECORDS -->
+    <div class="panel" id="panel-cert-records">
+      <h5 class="panel-title">Certificate Records</h5>
+      <div class="card mb-3"><div class="card-body">
+        <div class="row g-2">
+          <div class="col-md-4"><input type="text" class="form-control form-control-sm" id="certrec-q" placeholder="Search by name, email, cert no, program…"></div>
+          <div class="col-md-2"><button class="btn btn-primary btn-sm" onclick="searchCertRecords()"><i class="bi bi-search"></i> Search</button></div>
+          <div class="col-md-2"><button class="btn btn-outline-secondary btn-sm" onclick="loadCertRecords()">Show All</button></div>
+        </div>
+      </div></div>
+      <div class="card"><div class="card-body" id="cert-records-body">
+        <div class="text-muted small">Loading…</div>
+      </div></div>
+    </div>
+
+    <!-- INTERNSHIP STATUS ADMIN -->
+    <div class="panel" id="panel-internship-admin">
+      <h5 class="panel-title">Internship Status Management</h5>
+      <div class="card"><div class="card-body">
+        <div class="d-flex gap-2 mb-3">
+          <select class="form-control form-control-sm" style="width:auto;" id="intern-status-filter" onchange="loadInternships()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="selected">Selected</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div id="intern-admin-body"><div class="text-muted small">Loading…</div></div>
+      </div></div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = 'http://127.0.0.1:5000/api';
+// Use same key as login.html stores the token
+let token = localStorage.getItem('aisu_token') || '';
+
+// ── AUTH ──────────────────────────────────────────────────────
+function apiFetch(path, opts={}){
+  opts.headers = Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+token}, opts.headers||{});
+  return fetch(API+path, opts).then(r=>r.json());
+}
+
+
+// Logout — clear token and go back to login page
+document.getElementById('logout-link').onclick = e => {
+  e.preventDefault();
+  localStorage.removeItem('aisu_token');
+  localStorage.removeItem('aisu_user');
+  window.location.href = 'login.html';
+};
+
+// ── AUTH GUARD — no login form here, redirect to login.html if not authenticated ──
+const storedUser = JSON.parse(localStorage.getItem('aisu_user') || 'null');
+if (!token && !storedUser) {
+  window.location.href = 'login.html';
+} else {
+  // Try to use aisu_user data from login.html session
+  if (!token && storedUser) {
+    // If stored user has admin role, try to get token from aisu_token
+    token = localStorage.getItem('aisu_token') || '';
+  }
+  if (token) {
+    apiFetch('/auth/me').then(d => {
+      if (d.success && (d.data.role === 'admin' || d.data.role === 'national' || d.data.role === 'state' || d.data.role === 'district')) {
+        const u = d.data;
+        document.getElementById('user-name').textContent = u.name || u.email;
+        document.getElementById('user-role').textContent = u.role;
+        document.getElementById('user-avatar').textContent = (u.name || 'A')[0].toUpperCase();
+        loadDashboard();
+      } else {
+        // Not an admin — redirect back
+        alert('Access denied. Admin privileges required.');
+        window.location.href = 'login.html';
+      }
+    }).catch(() => {
+      window.location.href = 'login.html';
+    });
+  } else {
+    window.location.href = 'login.html';
+  }
+}
+
+// ── SIDEBAR NAV ──────────────────────────────────────────────
+document.querySelectorAll('.sidebar-link[data-panel]').forEach(link=>{
+  link.addEventListener('click',e=>{
+    e.preventDefault();
+    document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    link.classList.add('active');
+    const panelId = 'panel-'+link.dataset.panel;
+    document.getElementById(panelId)?.classList.add('active');
+    document.getElementById('page-title').textContent = link.textContent.trim();
+    loadPanel(link.dataset.panel);
+  });
+});
+
+// ── LOAD DASHBOARD ───────────────────────────────────────────
+async function loadDashboard(){
+  try {
+    const h = await apiFetch('/health');
+    const c = h.collections||{};
+    document.getElementById('cnt-primary').textContent = c.primary_members??'0';
+    document.getElementById('cnt-student').textContent = c.student_members??'0';
+    document.getElementById('cnt-complaints').textContent = c.complaints??'0';
+    document.getElementById('cnt-certs').textContent = c.certificates??'0';
+    document.getElementById('quick-stats-body').innerHTML=`
+      <div class="d-flex justify-content-between mb-2 small"><span>Competitions</span><strong>${c.competitions??0}</strong></div>
+      <div class="d-flex justify-content-between mb-2 small"><span>Cert Templates</span><strong>${c.cert_templates??0}</strong></div>
+      <div class="d-flex justify-content-between small"><span>Socket.IO</span><strong class="text-success">${h.socketio?'Active':'Off'}</strong></div>`;
+  } catch(e){ console.warn(e); }
+  // Recent apps
+  try {
+    const [pm, sm] = await Promise.all([
+      apiFetch('/members?limit=5'),
+      apiFetch('/students?limit=5')
+    ]);
+    let rows='';
+    (pm.data||[]).forEach(m=>{rows+=`<tr><td><code>${m.member_id||m._id}</code></td><td>${m.full_name||m.name||'—'}</td><td>Primary Member</td><td><span class="badge-status ${statusClass(m.status)}">${m.status||'Pending'}</span></td><td>${fmtDate(m.applied_at||m.created_at)}</td><td>${actionBtns(m._id,'primary_members')}</td></tr>`;});
+    (sm.data||[]).forEach(s=>{rows+=`<tr><td><code>${s.student_id||s._id}</code></td><td>${s.full_name||s.name||'—'}</td><td>Student Member</td><td><span class="badge-status ${statusClass(s.status)}">${s.status||'Pending'}</span></td><td>${fmtDate(s.applied_at||s.created_at)}</td><td>${actionBtns(s._id,'student_members')}</td></tr>`;});
+    document.getElementById('recent-apps').innerHTML = rows||'<tr><td colspan="6" class="text-center text-muted py-3">No applications yet</td></tr>';
+  } catch(e){}
+}
+
+function loadPanel(id){
+  if(id==='dashboard') return loadDashboard();
+  if(id==='primary-members') return loadTable('/members','pm-body',['member_id','full_name','state','designation','status','applied_at'],7,['Approve','Reject']);
+  if(id==='student-members') return loadTable('/students','sm-body',['student_id','full_name','institution','state','status','expiry_date'],7,['Approve','Reject']);
+  if(id==='complaints') return loadTable('/complaints','complaints-body',['complaint_id','category','_id','status','filed_at'],6,['View','Update']);
+  if(id==='competitions') return loadTable('/competitions','comp-body',['title','category','last_date','_registrations','status'],6,['Edit','Delete']);
+  if(id==='internships') return loadTable('/internship','intern-body',['name','student_id','domain','status','applied_at'],6,['Approve','Reject']);
+  if(id==='icell') return loadTable('/icell','icell-body',['proposal_id','title','category','submitted_by','status'],6,['Review','Approve']);
+  if(id==='affiliations') return loadTable('/affiliation','aff-body',['affiliation_id','org_name','state','type','status'],6,['Approve','Reject']);
+  if(id==='cert-templates') return loadTemplates();
+  if(id==='cert-generate') return loadCertsSection();
+  if(id==='quiz-rooms') return loadQuizRooms();
+}
+
+async function loadTable(endpoint, tbodyId, fields, colspan, actions=[]){
+  const tbody = document.getElementById(tbodyId);
+  if(!tbody) return;
+  tbody.innerHTML='<tr><td colspan="'+colspan+'" class="text-center py-3 text-muted">Loading...</td></tr>';
+  try{
+    const res = await apiFetch(endpoint);
+    const rows = res.data||res.members||res.students||res.complaints||[];
+    if(!rows.length){tbody.innerHTML='<tr><td colspan="'+colspan+'" class="text-center py-3 text-muted">No records found</td></tr>';return;}
+    tbody.innerHTML = rows.map(r=>{
+      const cells = fields.map(f=>`<td>${f==='status'?`<span class="badge-status ${statusClass(r[f])}">${r[f]||'—'}</span>`:escHtml(String(r[f]||'—'))}</td>`).join('');
+      const actCells = actions.map(a=>`<button class="btn btn-xs" style="font-size:.72rem;padding:3px 9px;background:${a==='Approve'?'#16a34a':a==='Reject'?'#dc2626':'#374151'};color:#fff;border:0;border-radius:5px;" onclick="doAction('${a}','${r._id}','${endpoint}')">${a}</button>`).join(' ');
+      return `<tr>${cells}<td>${actCells}</td></tr>`;
+    }).join('');
+  }catch(e){tbody.innerHTML='<tr><td colspan="'+colspan+'" class="text-center text-danger py-3">Failed to load</td></tr>';}
+}
+
+async function loadTemplates(){
+  try{
+    const res = await apiFetch('/cert-templates/templates');
+    const list = document.getElementById('tpl-list');
+    const templates = res.data||[];
+    if(!templates.length){list.innerHTML='<div class="col-12 text-muted small">No templates uploaded yet.</div>';return;}
+    list.innerHTML = templates.map(t=>`
+      <div class="col-md-4"><div class="form-card" style="border-top:3px solid var(--primary);">
+        <div class="fw-600">${escHtml(t.name)}</div>
+        <div class="small text-muted mb-1">Code: <code>${t.prog_code}</code> &bull; ${t.ext}</div>
+        <div class="small text-muted mb-2">Placeholders: ${(t.placeholders||[]).map(p=>`<code>{{${p}}}</code>`).join(', ')||'None detected'}</div>
+        <button class="btn btn-sm" onclick="deleteTpl('${t._id}')" style="background:#fee2e2;color:#dc2626;border:0;font-size:.75rem;">Delete</button>
+      </div></div>`).join('');
+    // Also populate generator dropdown
+    const sel = document.getElementById('gen-tpl-id');
+    if(sel){sel.innerHTML='<option value="">-- Choose Template --</option>'+templates.map(t=>`<option value="${t._id}">${escHtml(t.name)} (${t.prog_code})</option>`).join('');}
+  }catch(e){}
+}
+
+async function loadCertsSection(){
+  loadTemplates();
+  try{
+    const res = await apiFetch('/cert-templates/templates');
+    const sel = document.getElementById('gen-tpl-id');
+    if(sel){const ts=res.data||[];sel.innerHTML='<option value="">-- Choose Template --</option>'+ts.map(t=>`<option value="${t._id}">${escHtml(t.name)}</option>`).join('');}
+  }catch(e){}
+  try{
+    const res = await apiFetch('/certs');
+    const rows = res.data||[];
+    document.getElementById('certs-body').innerHTML = rows.length
+      ? rows.map(c=>`<tr><td><code>${c.cert_number||c._id}</code></td><td>${escHtml(c.participant_name||'—')}</td><td>${escHtml(c.program||'—')}</td><td>${fmtDate(c.issued_at||c.created_at)}</td><td><a href="${API}/cert-templates/download/${c._id}" class="btn btn-sm" style="background:var(--dark);color:#fff;border:0;font-size:.75rem;" target="_blank">Download</a></td></tr>`).join('')
+      : '<tr><td colspan="5" class="text-center text-muted py-3">No certificates issued yet</td></tr>';
+  }catch(e){}
+}
+
+async function loadQuizRooms(){
+  try{
+    const res = await apiFetch('/quiz/rooms');
+    const rooms = res.data||[];
+    document.getElementById('rooms-body').innerHTML = rooms.length
+      ? rooms.map(r=>`<tr><td><strong style="letter-spacing:.1em;color:var(--primary);">${r.code}</strong></td><td>${escHtml(r.room_name)}</td><td><span class="badge-status ${r.status==='active'?'s-active':r.status==='ended'?'s-rejected':'s-pending'}">${r.status}</span></td><td>${r.participants}</td><td><a href="quiz-room.html?code=${r.code}&mod=1" class="btn btn-sm" style="background:var(--dark);color:#fff;border:0;font-size:.75rem;" target="_blank">Open</a></td></tr>`).join('')
+      : '<tr><td colspan="5" class="text-center text-muted py-3">No active rooms</td></tr>';
+  }catch(e){}
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────
+async function doAction(action, id, endpoint){
+  const statusMap={Approve:'active',Reject:'rejected',Review:'under_review'};
+  const status = statusMap[action];
+  if(!status) return;
+  const confirm2 = window.confirm(`${action} this record?`);
+  if(!confirm2) return;
+  try{
+    await apiFetch(endpoint+'/'+id+'/status',{method:'PATCH',body:JSON.stringify({status})});
+    loadPanel(endpoint.replace('/api','').replace('/',''));
+    alert('Status updated.');
+  }catch(e){alert('Update failed.');}
+}
+
+async function deleteTpl(id){
+  if(!confirm('Delete this template?')) return;
+  await apiFetch('/cert-templates/templates/'+id,{method:'DELETE'});
+  loadTemplates();
+}
+
+// ── TEMPLATE UPLOAD ────────────────────────────────────────────
+document.getElementById('tpl-file-input').onchange = function(){
+  document.getElementById('tpl-file-name').textContent = this.files[0]?.name||'';
+};
+document.getElementById('tpl-upload-btn').onclick = async()=>{
+  const name  = document.getElementById('tpl-name').value.trim();
+  const code  = document.getElementById('tpl-code').value.trim().toUpperCase();
+  const file  = document.getElementById('tpl-file-input').files[0];
+  const desc  = document.getElementById('tpl-desc').value;
+  if(!name||!code||!file){alert('Name, code and file are required.');return;}
+  const fd = new FormData();
+  fd.append('name',name);fd.append('prog_code',code);fd.append('description',desc);fd.append('template_file',file);
+  const res = await fetch(API+'/cert-templates/templates',{method:'POST',headers:{Authorization:'Bearer '+token},body:fd});
+  const data = await res.json();
+  if(data.success){alert('Template uploaded! Placeholders found: '+(data.data?.placeholders||[]).join(', ')||'None');loadTemplates();}
+  else alert(data.message||'Upload failed');
+};
+
+// ── CERTIFICATE GENERATION ─────────────────────────────────────
+document.getElementById('gen-mode')?.addEventListener('change',function(){
+  document.getElementById('gen-manual-section').classList.toggle('d-none', this.value==='excel');
+  document.getElementById('gen-excel-section').classList.toggle('d-none', this.value==='manual');
+});
+document.getElementById('gen-excel-input')?.addEventListener('change', async function(){
+  const file=this.files[0];
+  if(!file) return;
+  document.getElementById('gen-excel-name').textContent=file.name;
+  const fd=new FormData();fd.append('excel_file',file);
+  const res=await fetch(API+'/cert-templates/participants/upload',{method:'POST',headers:{Authorization:'Bearer '+token},body:fd});
+  const data=await res.json();
+  if(data.success){
+    const p=data.data;
+    document.getElementById('gen-preview-count').textContent=p.count;
+    document.getElementById('gen-preview-head').innerHTML=p.headers.map(h=>`<th>${h}</th>`).join('');
+    document.getElementById('gen-preview-body').innerHTML=p.participants.slice(0,10).map(r=>`<tr>${p.headers.map(h=>`<td>${r[h]||''}</td>`).join('')}</tr>`).join('');
+    document.getElementById('gen-preview-wrap').classList.remove('d-none');
+  }
+});
+document.getElementById('gen-certs-btn')?.addEventListener('click', async()=>{
+  const tid  = document.getElementById('gen-tpl-id').value;
+  const code = document.getElementById('gen-prog-code').value.trim().toUpperCase()||'COMP';
+  const mode = document.getElementById('gen-mode').value;
+  let participants=[];
+  if(mode==='manual'){
+    const lines=(document.getElementById('gen-participants').value||'').split('\n').filter(l=>l.trim());
+    participants=lines.map(l=>{const[name,email,program]=l.split(',').map(s=>s.trim());return{name,email,program};});
+  }
+  if(!participants.length&&mode==='manual'){alert('Enter at least one participant.');return;}
+  document.getElementById('gen-result').textContent='Generating...';
+  const res=await apiFetch('/cert-templates/generate',{method:'POST',body:JSON.stringify({template_id:tid,prog_code:code,mode:'manual',participants})});
+  if(res.success){document.getElementById('gen-result').textContent=res.message;loadCertsSection();}
+  else document.getElementById('gen-result').textContent=res.message||'Failed';
+});
+
+// ── QUIZ ROOM CREATION ────────────────────────────────────────
+document.getElementById('create-room-btn').onclick = async()=>{
+  const name    = document.getElementById('qr-name').value||'Quiz Room';
+  const teams   = document.getElementById('qr-teams').value||10;
+  const time    = document.getElementById('qr-time').value||30;
+  let questions = [];
+  try{ questions=JSON.parse(document.getElementById('qr-questions').value||'[]'); }catch(e){alert('Invalid JSON in questions.');return;}
+  const res = await apiFetch('/quiz/rooms',{method:'POST',body:JSON.stringify({room_name:name,max_teams:teams,time_limit_minutes:time,questions})});
+  if(res.success){
+    const code=res.data.room_code;
+    document.getElementById('room-code-display').textContent=code;
+    document.getElementById('room-join-link').href=`quiz-room.html?code=${code}&mod=1`;
+    document.getElementById('room-created-info').classList.remove('d-none');
+    loadQuizRooms();
+  } else alert(res.message||'Failed to create room');
+};
+
+// ── ANNOUNCEMENTS ────────────────────────────────────────────
+document.getElementById('ann-post-btn').onclick = async()=>{
+  const title=document.getElementById('ann-title').value.trim();
+  const content=document.getElementById('ann-content').value.trim();
+  const type=document.getElementById('ann-type').value;
+  const link=document.getElementById('ann-link').value.trim();
+  if(!title||!content){alert('Title and content required.');return;}
+  const res=await apiFetch('/admin/announcements',{method:'POST',body:JSON.stringify({title,content,type,link})});
+  if(res.success){alert('Announcement posted!');document.getElementById('ann-title').value='';document.getElementById('ann-content').value='';}
+  else alert(res.message||'Failed');
+};
+
+// ── PRESS ────────────────────────────────────────────────────
+document.getElementById('press-post-btn').onclick = async()=>{
+  const title=document.getElementById('press-title').value.trim();
+  const content=document.getElementById('press-content').value.trim();
+  const type=document.getElementById('press-type').value;
+  const source=document.getElementById('press-source').value.trim();
+  if(!title){alert('Title required.');return;}
+  const res=await apiFetch('/admin/press',{method:'POST',body:JSON.stringify({title,content,type,source})});
+  if(res.success){alert('Published!');}
+  else alert(res.message||'Failed');
+};
+
+// ── ADD COMPETITION ────────────────────────────────────────────
+document.getElementById('nc-submit-btn')?.addEventListener('click', async()=>{
+  const body={title:document.getElementById('nc-title').value.trim(),category:document.getElementById('nc-category').value,description:document.getElementById('nc-desc').value.trim(),last_date:document.getElementById('nc-deadline').value,prizes:{first:document.getElementById('nc-p1').value,second:document.getElementById('nc-p2').value,third:document.getElementById('nc-p3').value}};
+  if(!body.title){alert('Title required');return;}
+  const res=await apiFetch('/competitions',{method:'POST',body:JSON.stringify(body)});
+  if(res.success){bootstrap.Modal.getInstance(document.getElementById('addCompModal'))?.hide();alert('Competition created!');loadPanel('competitions');}
+  else alert(res.message||'Failed');
+});
+
+// ── HELPERS ──────────────────────────────────────────────────
+function statusClass(s=''){const m={'active':'s-active','approved':'s-active','pending':'s-pending','under review':'s-review','under_review':'s-review','rejected':'s-rejected','closed':'s-rejected'};return m[(s||'').toLowerCase()]||'s-pending';}
+function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
+function escHtml(s){const d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+function actionBtns(id,col){return `<button class="btn btn-xs" style="font-size:.7rem;padding:2px 8px;background:#16a34a;color:#fff;border:0;border-radius:4px;" onclick="doAction('Approve','${id}','/${col}')">Approve</button> <button class="btn btn-xs" style="font-size:.7rem;padding:2px 8px;background:#dc2626;color:#fff;border:0;border-radius:4px;" onclick="doAction('Reject','${id}','/${col}')">Reject</button>`;}
+
+// ── Gallery Management ─────────────────────────────────────
+async function loadGallery() {
+  const res = await apiFetch('/api/admin/gallery');
+  const wrap = document.getElementById('gallery-list');
+  if (!res || !res.success || !res.data.length) { wrap.innerHTML = '<p class="text-muted small">No items.</p>'; return; }
+  wrap.innerHTML = `<table class="table table-sm table-hover"><thead><tr><th>Title</th><th>Category</th><th>Date</th><th>Action</th></tr></thead><tbody>
+    ${res.data.map(i=>`<tr><td>${i.title}</td><td>${i.category}</td><td>${i.event_date||'—'}</td>
+    <td><button class="btn btn-outline-danger btn-sm" onclick="deleteItem('gallery','${i._id}',loadGallery)">Delete</button></td></tr>`).join('')}
+  </tbody></table>`;
+}
+async function addGalleryItem() {
+  const fd = new FormData();
+  fd.append('title', document.getElementById('gl-title').value);
+  fd.append('category', document.getElementById('gl-cat').value);
+  fd.append('event_date', document.getElementById('gl-date').value);
+  fd.append('description', document.getElementById('gl-desc').value);
+  const f = document.getElementById('gl-img').files[0];
+  if (f) fd.append('image', f);
+  const res = await apiFetch('/api/admin/gallery', { method:'POST', body:fd });
+  document.getElementById('gl-msg').innerHTML = res.success ? '<span class="text-success">Added!</span>' : `<span class="text-danger">${res.message}</span>`;
+  if (res.success) loadGallery();
+}
+
+// ── Competition Results ─────────────────────────────────────
+async function loadCompResults() {
+  const res = await apiFetch('/api/admin/competition-results');
+  const wrap = document.getElementById('comp-results-list');
+  if (!res || !res.success || !res.data.length) { wrap.innerHTML = '<p class="text-muted small">No results published yet.</p>'; return; }
+  wrap.innerHTML = `<table class="table table-sm table-hover"><thead><tr><th>Competition</th><th>Position</th><th>Winner</th><th>Institution</th><th>State</th><th>Action</th></tr></thead><tbody>
+    ${res.data.map(r=>`<tr><td>${r.competition_name}</td><td>${r.position}</td><td>${r.winner_name}</td><td>${r.institution||'—'}</td><td>${r.state||'—'}</td>
+    <td><button class="btn btn-outline-danger btn-sm" onclick="deleteItem('competition-results','${r._id}',loadCompResults)">Delete</button></td></tr>`).join('')}
+  </tbody></table>`;
+}
+async function addCompResult() {
+  const fd = new FormData();
+  fd.append('competition_name', document.getElementById('cr-comp').value);
+  fd.append('position', document.getElementById('cr-pos').value);
+  fd.append('winner_name', document.getElementById('cr-name').value);
+  fd.append('institution', document.getElementById('cr-inst').value);
+  fd.append('state', document.getElementById('cr-state').value);
+  fd.append('description', document.getElementById('cr-desc').value);
+  const f = document.getElementById('cr-photo').files[0];
+  if (f) fd.append('photo', f);
+  const res = await apiFetch('/api/admin/competition-results', { method:'POST', body:fd });
+  document.getElementById('cr-msg').innerHTML = res.success ? '<span class="text-success">Published!</span>' : `<span class="text-danger">${res.message}</span>`;
+  if (res.success) loadCompResults();
+}
+
+// ── Publications ────────────────────────────────────────────
+async function loadPublications() {
+  const res = await apiFetch('/api/admin/publications');
+  const wrap = document.getElementById('publications-list');
+  if (!res || !res.success || !res.data.length) { wrap.innerHTML = '<p class="text-muted small">No publications yet.</p>'; return; }
+  wrap.innerHTML = `<table class="table table-sm table-hover"><thead><tr><th>Title</th><th>Type</th><th>Author</th><th>Competition</th><th>Action</th></tr></thead><tbody>
+    ${res.data.map(p=>`<tr><td>${p.title}</td><td>${p.type}</td><td>${p.author||'—'}</td><td>${p.competition_name||'—'}</td>
+    <td><button class="btn btn-outline-danger btn-sm" onclick="deleteItem('publications','${p._id}',loadPublications)">Delete</button></td></tr>`).join('')}
+  </tbody></table>`;
+}
+async function addPublication() {
+  const fd = new FormData();
+  fd.append('title', document.getElementById('pub-title').value);
+  fd.append('type', document.getElementById('pub-type').value);
+  fd.append('author', document.getElementById('pub-author').value);
+  fd.append('competition_name', document.getElementById('pub-comp').value);
+  fd.append('institution', document.getElementById('pub-inst').value);
+  fd.append('image_url', document.getElementById('pub-imgurl').value);
+  const f = document.getElementById('pub-file').files[0];
+  if (f) fd.append('file', f);
+  const res = await apiFetch('/api/admin/publications', { method:'POST', body:fd });
+  document.getElementById('pub-msg').innerHTML = res.success ? '<span class="text-success">Published!</span>' : `<span class="text-danger">${res.message}</span>`;
+  if (res.success) loadPublications();
+}
+
+// ── Cert Records ────────────────────────────────────────────
+async function loadCertRecords(q='') {
+  const url = q ? `/api/certs/?q=${encodeURIComponent(q)}` : '/api/certs/all';
+  const res = await apiFetch(url);
+  const wrap = document.getElementById('cert-records-body');
+  if (!res || !res.success || !res.data.length) { wrap.innerHTML = '<p class="text-muted small">No certificates found.</p>'; return; }
+  wrap.innerHTML = `<table class="table table-sm table-hover"><thead><tr><th>Cert Number</th><th>Name</th><th>Email</th><th>Program</th><th>Type</th><th>Status</th><th>Issued</th><th>Action</th></tr></thead><tbody>
+    ${res.data.map(c=>`<tr>
+      <td style="font-family:monospace;font-size:0.8rem;">${c.cert_number}</td>
+      <td>${c.participant_name}</td><td>${c.participant_email||'—'}</td>
+      <td>${c.program||'—'}</td><td>${c.cert_type||'—'}</td>
+      <td><span class="badge ${c.status==='revoked'?'bg-danger':c.status==='reissued'?'bg-warning text-dark':'bg-success'}">${c.status||'issued'}</span></td>
+      <td>${c.issued_at?c.issued_at.slice(0,10):'—'}</td>
+      <td>
+        ${c.status==='issued'?`<button class="btn btn-outline-warning btn-sm me-1" onclick="reissueCert('${c._id}')">Reissue</button>
+        <button class="btn btn-outline-danger btn-sm" onclick="revokeCert('${c._id}')">Revoke</button>`:'—'}
+      </td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+function searchCertRecords() { loadCertRecords(document.getElementById('certrec-q').value); }
+async function reissueCert(id) {
+  if (!confirm('Reissue this certificate? A new certificate number will be generated.')) return;
+  const res = await apiFetch(`/api/certs/${id}/reissue`, {method:'POST'});
+  alert(res.success ? `Reissued. New cert: ${res.data.new_cert_number}` : res.message);
+  loadCertRecords();
+}
+async function revokeCert(id) {
+  const reason = prompt('Reason for revocation?');
+  if (reason === null) return;
+  const res = await apiFetch(`/api/certs/${id}/revoke`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({reason})});
+  alert(res.success ? 'Certificate revoked.' : res.message);
+  loadCertRecords();
+}
+
+// ── Internship Admin Status ─────────────────────────────────
+async function loadInternships() {
+  const statusFilter = document.getElementById('intern-status-filter').value;
+  const url = '/api/internship/' + (statusFilter ? '?status=' + statusFilter : '');
+  const res = await apiFetch(url);
+  const wrap = document.getElementById('intern-admin-body');
+  if (!res || !res.success || !res.data.length) { wrap.innerHTML = '<p class="text-muted small">No internship applications.</p>'; return; }
+  wrap.innerHTML = `<table class="table table-sm table-hover"><thead><tr><th>Name</th><th>Email</th><th>Domain</th><th>Partner</th><th>Selection</th><th>Progress</th><th>Update Status</th></tr></thead><tbody>
+    ${res.data.map(a=>`<tr>
+      <td>${a.fullname}</td><td>${a.email}</td><td>${a.domain}</td><td>${a.partner||'—'}</td>
+      <td>${a.selection_status||'Applied'}</td><td>${a.progress_status||'—'}</td>
+      <td>
+        <select class="form-select form-select-sm" style="width:130px;display:inline;" id="is-${a._id}">
+          <option value="">Set status…</option>
+          <option value="shortlisted">Shortlisted</option>
+          <option value="selected">Selected</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <button class="btn btn-primary btn-sm ms-1" onclick="updateInternStatus('${a._id}')">Update</button>
+      </td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+async function updateInternStatus(id) {
+  const status = document.getElementById('is-' + id).value;
+  if (!status) { alert('Please select a status'); return; }
+  const note = prompt('Add a note (optional):', '') || '';
+  const res = await apiFetch(`/api/internship/${id}/status`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', 'Authorization':'Bearer '+localStorage.getItem('aisu_token')},
+    body: JSON.stringify({status, note})
+  });
+  alert(res.success ? 'Status updated!' : res.message);
+  loadInternships();
+}
+
+// ── Generic delete ──────────────────────────────────────────
+async function deleteItem(endpoint, id, reloadFn) {
+  if (!confirm('Delete this item?')) return;
+  const res = await apiFetch(`/api/admin/${endpoint}/${id}`, {method:'DELETE'});
+  if (res.success) reloadFn();
+  else alert(res.message);
+}
+
+// ── Panel load hooks for new panels ────────────────────────
+const panelLoaders = {
+  'gallery-mgmt'     : loadGallery,
+  'comp-results'     : loadCompResults,
+  'publications'     : loadPublications,
+  'cert-records'     : () => loadCertRecords(),
+  'internship-admin' : loadInternships,
+};
+document.querySelectorAll('.sidebar-link[data-panel]').forEach(link => {
+  link.addEventListener('click', function(e) {
+    const pid = this.getAttribute('data-panel');
+    if (panelLoaders[pid]) setTimeout(panelLoaders[pid], 100);
+  });
+});
+
+
+// ── ICell enhanced functions ───────────────────────────────
+async function loadIcellProposals() {
+  const res = await apiFetch('/api/icell/');
+  const tbody = document.getElementById('icell-body');
+  if (!res || !res.success || !res.data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-3 text-muted">No proposals yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = res.data.map(p => `
+    <tr>
+      <td style="font-family:monospace;font-size:0.8rem;">${p.proposal_id||p._id.slice(0,8).toUpperCase()}</td>
+      <td>${p.title}</td>
+      <td>${p.applicant_name||'—'}</td>
+      <td>₹${p.required_funds||'—'}</td>
+      <td><span class="badge ${p.status==='approved'?'bg-success':p.status==='rejected'?'bg-danger':p.status==='under_review'?'bg-warning text-dark':'bg-secondary'}">${p.status||'submitted'}</span></td>
+      <td>${p.investor_status||'—'}</td>
+      <td>
+        ${p.status!=='approved'?`<button class="btn btn-outline-success btn-sm me-1" onclick="updateIcellStatus('${p._id}','approved')">Approve</button>
+        <button class="btn btn-outline-danger btn-sm me-1" onclick="updateIcellStatus('${p._id}','rejected')">Reject</button>`:''}
+        ${p.status==='approved' && p.investor_status!=='forwarded'?`<button class="btn btn-outline-primary btn-sm" onclick="showForwardInvestor('${p._id}')">Forward to Investor</button>`:''}
+        ${p.status==='approved' && p.investor_status==='forwarded' && !p.fund_disbursed?`<button class="btn btn-outline-warning btn-sm" onclick="recordFundDisbursement('${p._id}')">Record Funds</button>`:''}
+        ${p.fund_disbursed?'<span class="badge bg-success">Funded</span>':''}
+      </td>
+    </tr>`).join('');
+}
+async function updateIcellStatus(id, status) {
+  const note = status === 'rejected' ? (prompt('Reason for rejection:') || '') : '';
+  const res = await apiFetch(`/api/icell/${id}/status`, {
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('aisu_token')},
+    body: JSON.stringify({status, note})
+  });
+  if (res.success) loadIcellProposals(); else alert(res.message);
+}
+function showForwardInvestor(id) {
+  document.getElementById('fwd-proposal-id').value = id;
+  document.getElementById('icell-fwd-box').style.display = 'block';
+  document.getElementById('fwd-msg').innerHTML = '';
+}
+async function submitForwardInvestor() {
+  const id = document.getElementById('fwd-proposal-id').value;
+  const res = await apiFetch(`/api/icell/${id}/forward-investor`, {
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('aisu_token')},
+    body: JSON.stringify({
+      investor_name : document.getElementById('fwd-inv-name').value,
+      investor_email: document.getElementById('fwd-inv-email').value,
+      investor_org  : document.getElementById('fwd-inv-org').value,
+      message       : document.getElementById('fwd-message').value,
+    })
+  });
+  document.getElementById('fwd-msg').innerHTML = res.success
+    ? '<span class="text-success">✓ Forwarded to investor successfully.</span>'
+    : `<span class="text-danger">${res.message}</span>`;
+  if (res.success) { setTimeout(() => { document.getElementById('icell-fwd-box').style.display='none'; loadIcellProposals(); }, 1500); }
+}
+async function recordFundDisbursement(id) {
+  const amount  = prompt('Enter disbursed amount (₹):');
+  if (!amount) return;
+  const bankRef = prompt('Bank Reference / Transaction ID (optional):') || '';
+  const res = await apiFetch(`/api/icell/${id}/fund-disbursement`, {
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('aisu_token')},
+    body: JSON.stringify({amount, bank_ref: bankRef})
+  });
+  alert(res.success ? 'Fund disbursement recorded and innovator notified!' : res.message);
+  if (res.success) loadIcellProposals();
+}
+
+</script>
+</body>
+</html>

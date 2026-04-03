@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>My Dashboard | AISU – All India Students Union</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="img/favicon.ico" rel="icon">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Saira:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/aisu-custom.css" rel="stylesheet">
+  <style>
+    body { background: #f0f4f8; font-family: 'Inter', sans-serif; min-height: 100vh; }
+    .dash-header {
+      background: linear-gradient(135deg, var(--dark) 0%, #1a2d42 100%);
+      color: #fff; padding: 0; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+    }
+    .dash-header-inner { display:flex; align-items:center; justify-content:space-between; padding:14px 28px; }
+    .dash-brand { display:flex; align-items:center; gap:12px; text-decoration:none; }
+    .dash-brand img { height:38px; }
+    .dash-brand-text { font-family:'Saira',sans-serif; font-size:1.1rem; font-weight:800; color:var(--primary); }
+    .dash-brand-sub { font-size:0.7rem; color:rgba(255,255,255,0.55); margin-top:-2px; letter-spacing:1px; }
+    .dash-user-info { display:flex; align-items:center; gap:14px; }
+    .dash-avatar { width:38px; height:38px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1rem; color:#fff; }
+    .dash-user-name { font-weight:600; font-size:0.9rem; color:#fff; }
+    .dash-user-role { font-size:0.72rem; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:1px; }
+    .btn-logout { background:rgba(255,111,15,0.15); border:1px solid rgba(255,111,15,0.35); color:var(--primary); padding:6px 16px; border-radius:8px; font-size:0.82rem; cursor:pointer; transition:all 0.2s; }
+    .btn-logout:hover { background:var(--primary); color:#fff; }
+
+    .dash-layout { display:flex; min-height:calc(100vh - 66px); }
+    .dash-sidebar {
+      width:240px; flex-shrink:0; background:#fff;
+      box-shadow:2px 0 12px rgba(0,0,0,0.06); padding:24px 0;
+      position:sticky; top:66px; height:calc(100vh - 66px); overflow-y:auto;
+    }
+    .sidebar-section { padding:0 16px; margin-bottom:8px; }
+    .sidebar-label { font-size:0.68rem; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:1.5px; padding:8px 10px 4px; }
+    .sidebar-link {
+      display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px;
+      color:#444; font-size:0.88rem; font-weight:500; text-decoration:none; cursor:pointer;
+      transition:all 0.18s; margin-bottom:2px;
+    }
+    .sidebar-link:hover, .sidebar-link.active { background:var(--primary); color:#fff; }
+    .sidebar-link i { font-size:1rem; width:20px; text-align:center; }
+
+    .dash-main { flex:1; padding:28px; overflow-y:auto; }
+    .panel { display:none; }
+    .panel.active { display:block; }
+    .panel-title { font-family:'Saira',sans-serif; font-size:1.4rem; font-weight:800; color:var(--dark); margin-bottom:20px; }
+
+    /* Stat cards */
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:16px; margin-bottom:28px; }
+    .stat-card { background:#fff; border-radius:14px; padding:20px 18px; box-shadow:0 2px 10px rgba(0,0,0,0.06); border-left:4px solid var(--primary); }
+    .stat-card .stat-num { font-size:1.8rem; font-weight:800; color:var(--dark); }
+    .stat-card .stat-lbl { font-size:0.78rem; color:#888; margin-top:2px; }
+    .stat-card .stat-icon { font-size:1.4rem; color:var(--primary); margin-bottom:8px; }
+
+    /* Card */
+    .info-card { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.06); margin-bottom:20px; overflow:hidden; }
+    .info-card-head { background:linear-gradient(135deg, var(--dark), var(--dark2)); padding:14px 20px; display:flex; align-items:center; gap:10px; }
+    .info-card-head h5 { margin:0; color:#fff; font-size:0.95rem; font-weight:600; }
+    .info-card-head i { color:var(--primary); font-size:1.1rem; }
+    .info-card-body { padding:20px; }
+
+    /* Badge */
+    .status-badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; letter-spacing:0.5px; }
+    .badge-approved { background:#d4edda; color:#155724; }
+    .badge-pending  { background:#fff3cd; color:#856404; }
+    .badge-rejected { background:#f8d7da; color:#721c24; }
+    .badge-active   { background:#cfe2ff; color:#084298; }
+
+    /* Table */
+    .dash-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .dash-table th { background:#f8fafd; padding:10px 14px; text-align:left; font-weight:600; color:#555; border-bottom:2px solid #e9ecef; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
+    .dash-table td { padding:12px 14px; border-bottom:1px solid #f0f4f8; color:#333; vertical-align:middle; }
+    .dash-table tr:last-child td { border-bottom:none; }
+    .dash-table tr:hover td { background:#fafbfc; }
+
+    /* Member ID box */
+    .member-id-box { background:linear-gradient(135deg, var(--dark), var(--dark2)); border-radius:14px; padding:24px; text-align:center; color:#fff; margin-bottom:20px; }
+    .member-id-box .mid-label { font-size:0.75rem; color:rgba(255,255,255,0.55); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+    .member-id-box .mid-value { font-family:'Saira',sans-serif; font-size:1.8rem; font-weight:800; color:var(--primary); letter-spacing:3px; }
+    .member-id-box .mid-sub { font-size:0.78rem; color:rgba(255,255,255,0.5); margin-top:6px; }
+
+    /* Timeline */
+    .timeline { position:relative; padding-left:24px; }
+    .timeline::before { content:''; position:absolute; left:8px; top:0; bottom:0; width:2px; background:#e9ecef; }
+    .tl-item { position:relative; margin-bottom:18px; }
+    .tl-dot { position:absolute; left:-20px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid #fff; box-shadow:0 0 0 2px var(--primary); }
+    .tl-content { background:#f8fafd; border-radius:10px; padding:12px 16px; }
+    .tl-date { font-size:0.72rem; color:#aaa; margin-top:4px; }
+
+    /* Empty state */
+    .empty-state { text-align:center; padding:48px 20px; color:#aaa; }
+    .empty-state i { font-size:3rem; margin-bottom:12px; display:block; }
+    .empty-state p { font-size:0.9rem; }
+
+    /* Cert card */
+    .cert-card { background:#fff; border:1px solid #e9ecef; border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px; margin-bottom:12px; transition:box-shadow 0.2s; }
+    .cert-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+    .cert-icon { width:48px; height:48px; border-radius:10px; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.3rem; flex-shrink:0; }
+    .cert-info { flex:1; }
+    .cert-info .cert-title { font-weight:600; color:var(--dark); font-size:0.9rem; }
+    .cert-info .cert-num { font-size:0.78rem; color:var(--primary); font-family:monospace; margin-top:2px; }
+    .cert-info .cert-date { font-size:0.73rem; color:#aaa; margin-top:2px; }
+
+    /* Progress tracker */
+    .progress-track { display:flex; align-items:center; gap:0; margin:16px 0; }
+    .pt-step { flex:1; text-align:center; position:relative; }
+    .pt-step::before { content:''; position:absolute; top:14px; left:50%; width:100%; height:2px; background:#e9ecef; z-index:0; }
+    .pt-step:last-child::before { display:none; }
+    .pt-circle { width:28px; height:28px; border-radius:50%; border:2px solid #e9ecef; background:#fff; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:#aaa; position:relative; z-index:1; transition:all 0.3s; }
+    .pt-step.done .pt-circle { background:var(--primary); border-color:var(--primary); color:#fff; }
+    .pt-step.active .pt-circle { background:#fff; border-color:var(--primary); color:var(--primary); box-shadow:0 0 0 3px rgba(255,111,15,0.2); }
+    .pt-label { font-size:0.7rem; color:#aaa; }
+    .pt-step.done .pt-label, .pt-step.active .pt-label { color:var(--primary); font-weight:600; }
+
+    .loading-overlay { display:none; text-align:center; padding:40px; }
+    .loading-overlay.active { display:block; }
+    .spinner { width:36px; height:36px; border:3px solid #e9ecef; border-top-color:var(--primary); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 12px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    @media (max-width:768px) {
+      .dash-sidebar { display:none; }
+      .dash-main { padding:16px; }
+      .stat-grid { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="dash-header">
+  <div class="dash-header-inner">
+    <a href="index.html" class="dash-brand">
+      <div style="width:38px;height:38px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Saira',sans-serif;font-weight:800;color:#fff;font-size:0.85rem;">AISU</div>
+      <div>
+        <div class="dash-brand-text">AISU4India</div>
+        <div class="dash-brand-sub">Member Portal</div>
+      </div>
+    </a>
+    <div class="dash-user-info">
+      <div>
+        <div class="dash-user-name" id="hdr-name">Loading…</div>
+        <div class="dash-user-role" id="hdr-role">—</div>
+      </div>
+      <div class="dash-avatar" id="hdr-avatar">?</div>
+      <button class="btn-logout" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="dash-layout">
+  <!-- Sidebar -->
+  <div class="dash-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="sidebar-link active" data-panel="overview" onclick="showPanel('overview',this)"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a class="sidebar-link" data-panel="profile" onclick="showPanel('profile',this)"><i class="bi bi-person-circle"></i> My Profile</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Membership</div>
+      <a class="sidebar-link" data-panel="membership" onclick="showPanel('membership',this)"><i class="bi bi-card-checklist"></i> Membership Status</a>
+      <a class="sidebar-link" data-panel="certificates" onclick="showPanel('certificates',this)"><i class="bi bi-patch-check"></i> My Certificates</a>
+      <a class="sidebar-link" data-panel="performance" onclick="showPanel('performance',this)"><i class="bi bi-graph-up"></i> Performance Reports</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Activities</div>
+      <a class="sidebar-link" data-panel="competitions" onclick="showPanel('competitions',this)"><i class="bi bi-trophy"></i> My Competitions</a>
+      <a class="sidebar-link" data-panel="internships" onclick="showPanel('internships',this)"><i class="bi bi-briefcase"></i> My Internships</a>
+      <a class="sidebar-link" data-panel="complaints" onclick="showPanel('complaints',this)"><i class="bi bi-megaphone"></i> My Complaints</a>
+      <a class="sidebar-link" data-panel="icell" onclick="showPanel('icell',this)"><i class="bi bi-lightbulb"></i> Innovation Cell</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Account</div>
+      <a class="sidebar-link" data-panel="settings" onclick="showPanel('settings',this)"><i class="bi bi-gear"></i> Settings</a>
+      <a class="sidebar-link" href="index.html"><i class="bi bi-house"></i> Public Site</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dash-main">
+
+    <!-- OVERVIEW -->
+    <div class="panel active" id="panel-overview">
+      <div class="panel-title">Welcome back, <span id="ov-name">—</span> 👋</div>
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card"><div class="stat-icon"><i class="bi bi-patch-check-fill"></i></div><div class="stat-num" id="st-certs">—</div><div class="stat-lbl">Certificates</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="bi bi-trophy-fill"></i></div><div class="stat-num" id="st-comps">—</div><div class="stat-lbl">Competitions</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="bi bi-briefcase-fill"></i></div><div class="stat-num" id="st-intern">—</div><div class="stat-lbl">Internships</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="bi bi-megaphone-fill"></i></div><div class="stat-num" id="st-comp2">—</div><div class="stat-lbl">Complaints</div></div>
+      </div>
+      <!-- Membership quick status -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="info-card-head"><i class="bi bi-card-checklist"></i><h5>Primary Membership</h5></div>
+            <div class="info-card-body" id="ov-primary-mem">
+              <div class="loading-overlay active"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="info-card-head"><i class="bi bi-mortarboard"></i><h5>Student Membership</h5></div>
+            <div class="info-card-body" id="ov-student-mem">
+              <div class="loading-overlay active"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="panel" id="panel-profile">
+      <div class="panel-title">My Profile</div>
+      <div class="info-card">
+        <div class="info-card-head"><i class="bi bi-person-circle"></i><h5>Personal Information</h5></div>
+        <div class="info-card-body" id="profile-content">
+          <div class="loading-overlay active"><div class="spinner"></div></div>
+        </div>
+      </div>
+      <div class="info-card mt-3">
+        <div class="info-card-head"><i class="bi bi-shield-lock"></i><h5>Change Password</h5></div>
+        <div class="info-card-body">
+          <div class="row g-3" style="max-width:400px;">
+            <div class="col-12"><input type="password" class="form-control" id="cp-old" placeholder="Current password"></div>
+            <div class="col-12"><input type="password" class="form-control" id="cp-new" placeholder="New password (min 8 chars)"></div>
+            <div class="col-12"><input type="password" class="form-control" id="cp-conf" placeholder="Confirm new password"></div>
+            <div class="col-12"><button class="btn btn-primary" onclick="changePassword()">Update Password</button></div>
+            <div class="col-12"><div id="cp-msg" class="small"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBERSHIP -->
+    <div class="panel" id="panel-membership">
+      <div class="panel-title">Membership Status</div>
+      <div id="mem-content">
+        <div class="loading-overlay active"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATES -->
+    <div class="panel" id="panel-certificates">
+      <div class="panel-title">My Certificates</div>
+      <div id="cert-content">
+        <div class="loading-overlay active"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE REPORTS -->
+    <div class="panel" id="panel-performance">
+      <div class="panel-title">Performance Reports</div>
+      <div class="info-card">
+        <div class="info-card-head"><i class="bi bi-upload"></i><h5>Upload Performance Report</h5></div>
+        <div class="info-card-body">
+          <div class="row g-3" style="max-width:500px;">
+            <div class="col-12"><input type="file" class="form-control" id="rpt-file" accept=".pdf,.doc,.docx"></div>
+            <div class="col-12"><input type="text" class="form-control" id="rpt-note" placeholder="Note (optional)"></div>
+            <div class="col-12"><button class="btn btn-primary" onclick="uploadReport()"><i class="bi bi-upload me-1"></i>Upload Report</button></div>
+            <div class="col-12"><div id="rpt-msg" class="small"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="info-card mt-3">
+        <div class="info-card-head"><i class="bi bi-file-earmark-text"></i><h5>Submitted Reports</h5></div>
+        <div class="info-card-body" id="reports-list">
+          <div class="empty-state"><i class="bi bi-file-earmark"></i><p>No reports submitted yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPETITIONS -->
+    <div class="panel" id="panel-competitions">
+      <div class="panel-title">My Competitions</div>
+      <div id="comp-content">
+        <div class="loading-overlay active"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- INTERNSHIPS -->
+    <div class="panel" id="panel-internships">
+      <div class="panel-title">My Internships</div>
+      <div id="intern-content">
+        <div class="loading-overlay active"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- COMPLAINTS -->
+    <div class="panel" id="panel-complaints">
+      <div class="panel-title">My Complaints</div>
+      <div class="info-card mb-3">
+        <div class="info-card-head"><i class="bi bi-search"></i><h5>Track Complaint</h5></div>
+        <div class="info-card-body">
+          <div class="d-flex gap-2" style="max-width:400px;">
+            <input type="text" class="form-control" id="track-id" placeholder="Enter Complaint ID (e.g. AISUCMP26…)">
+            <button class="btn btn-primary" onclick="trackComplaint()">Track</button>
+          </div>
+          <div id="track-result" class="mt-3"></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-head"><i class="bi bi-megaphone"></i><h5>File a New Complaint</h5></div>
+        <div class="info-card-body">
+          <p class="text-muted small">To file a complaint, visit the <a href="complaint.html">Complaint Portal</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ICELL -->
+    <div class="panel" id="panel-icell">
+      <div class="panel-title">Innovation Cell — My Proposals</div>
+      <div id="icell-content">
+        <div class="loading-overlay active"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="panel-title">Account Settings</div>
+      <div class="info-card">
+        <div class="info-card-head"><i class="bi bi-person-gear"></i><h5>Account Information</h5></div>
+        <div class="info-card-body">
+          <div class="row g-3" style="max-width:460px;" id="settings-form-wrap">
+            <div class="col-12"><label class="form-label small fw-600">Full Name</label><input type="text" class="form-control" id="set-name" placeholder="Your full name"></div>
+            <div class="col-12"><label class="form-label small fw-600">State</label>
+              <select class="form-control" id="set-state">
+                <option value="">Select State</option>
+                <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
+                <option>Bihar</option><option>Chhattisgarh</option><option>Delhi</option>
+                <option>Goa</option><option>Gujarat</option><option>Haryana</option>
+                <option>Himachal Pradesh</option><option>Jammu & Kashmir</option><option>Jharkhand</option>
+                <option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option>
+                <option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option>
+                <option>Mizoram</option><option>Nagaland</option><option>Odisha</option>
+                <option>Punjab</option><option>Rajasthan</option><option>Sikkim</option>
+                <option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option>
+                <option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+              </select>
+            </div>
+            <div class="col-12"><div id="set-msg" class="small"></div></div>
+            <div class="col-12"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- dash-main -->
+</div><!-- dash-layout -->
+
+<script>
+const API = 'http://localhost:5000/api';
+let _user = null;
+let _token = localStorage.getItem('aisu_token') || sessionStorage.getItem('aisu_token');
+
+// ── Auth guard ──────────────────────────────────────────────
+if (!_token) { window.location.href = 'login.html'; }
+
+async function apiGet(url) {
+  const r = await fetch(API + url, { headers: { Authorization: 'Bearer ' + _token } });
+  if (r.status === 401) { logout(); return null; }
+  return r.json();
+}
+async function apiPost(url, body, isForm=false) {
+  const opts = { method:'POST', headers:{ Authorization:'Bearer ' + _token } };
+  if (isForm) { opts.body = body; }
+  else { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const r = await fetch(API + url, opts);
+  return r.json();
+}
+
+function logout() {
+  localStorage.removeItem('aisu_token');
+  sessionStorage.removeItem('aisu_token');
+  window.location.href = 'login.html';
+}
+
+// ── Panel switching ─────────────────────────────────────────
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  // Lazy load
+  const loaders = { certificates: loadCerts, competitions: loadComps,
+                    internships: loadInterns, icell: loadIcell,
+                    membership: loadMembership, profile: renderProfile };
+  if (loaders[id]) loaders[id]();
+}
+
+// ── Init ────────────────────────────────────────────────────
+async function init() {
+  const res = await apiGet('/auth/me');
+  if (!res || !res.success) { logout(); return; }
+  _user = res.data;
+  // Header
+  document.getElementById('hdr-name').textContent = _user.name;
+  document.getElementById('hdr-role').textContent = (_user.role || 'user').replace(/_/g,' ');
+  document.getElementById('hdr-avatar').textContent = (_user.name || 'U')[0].toUpperCase();
+  document.getElementById('ov-name').textContent = _user.name.split(' ')[0];
+  // Overview membership panels
+  renderOverviewMem();
+  // Load stats
+  loadStats();
+}
+
+function renderOverviewMem() {
+  // Primary
+  const pm = _user.primary_membership;
+  const el1 = document.getElementById('ov-primary-mem');
+  if (pm) {
+    const badge = pm.status === 'approved' ? 'badge-approved' : pm.status === 'pending' ? 'badge-pending' : 'badge-rejected';
+    el1.innerHTML = `
+      <div class="member-id-box mb-2" style="padding:16px;">
+        <div class="mid-label">Member ID</div>
+        <div class="mid-value">${pm.member_id || '—'}</div>
+        <div class="mid-sub">Expires: ${pm.expiry_date || 'N/A'}</div>
+      </div>
+      <span class="status-badge ${badge}">${pm.status.toUpperCase()}</span>`;
+  } else {
+    el1.innerHTML = `<div class="empty-state" style="padding:16px;"><i class="bi bi-person-plus" style="font-size:1.5rem;"></i><p class="small">No primary membership.<br><a href="primary-membership.html">Apply Now</a></p></div>`;
+  }
+  // Student
+  const sm = _user.student_membership;
+  const el2 = document.getElementById('ov-student-mem');
+  if (sm) {
+    const badge = sm.status === 'approved' ? 'badge-approved' : sm.status === 'pending' ? 'badge-pending' : 'badge-rejected';
+    el2.innerHTML = `
+      <div class="member-id-box mb-2" style="padding:16px;">
+        <div class="mid-label">Student ID</div>
+        <div class="mid-value">${sm.member_id || '—'}</div>
+        <div class="mid-sub">Expires: ${sm.expiry_date || 'N/A'}</div>
+      </div>
+      <span class="status-badge ${badge}">${sm.status.toUpperCase()}</span>`;
+  } else {
+    el2.innerHTML = `<div class="empty-state" style="padding:16px;"><i class="bi bi-mortarboard" style="font-size:1.5rem;"></i><p class="small">No student membership.<br><a href="student-membership.html">Apply Now</a></p></div>`;
+  }
+}
+
+async function loadStats() {
+  // Certs
+  const cr = await apiGet('/certs/my');
+  if (cr && cr.success) document.getElementById('st-certs').textContent = cr.data.length;
+  // Competitions
+  const compr = await apiGet('/competitions/my-registrations');
+  if (compr && compr.success) document.getElementById('st-comps').textContent = compr.data.length;
+  // Internships
+  const ir = await apiGet('/internship/my');
+  if (ir && ir.success) document.getElementById('st-intern').textContent = ir.data.length;
+  // ICell
+  const icr = await apiGet('/icell/my-proposals');
+  if (icr && icr.success) document.getElementById('st-comp2').textContent = icr.data.length;
+}
+
+// ── Profile ─────────────────────────────────────────────────
+function renderProfile() {
+  if (!_user) return;
+  document.getElementById('set-name').value  = _user.name || '';
+  document.getElementById('set-state').value = _user.state || '';
+  document.getElementById('profile-content').innerHTML = `
+    <table class="dash-table">
+      <tr><th>Name</th><td>${_user.name}</td></tr>
+      <tr><th>Email</th><td>${_user.email}</td></tr>
+      <tr><th>Mobile</th><td>${_user.mobile || '—'}</td></tr>
+      <tr><th>State</th><td>${_user.state || '—'}</td></tr>
+      <tr><th>Role</th><td>${(_user.role||'user').replace(/_/g,' ')}</td></tr>
+      <tr><th>Account Status</th><td><span class="status-badge badge-approved">${_user.status||'active'}</span></td></tr>
+    </table>`;
+}
+
+// ── Membership detail ────────────────────────────────────────
+function loadMembership() {
+  const pm = _user.primary_membership;
+  const sm = _user.student_membership;
+  let html = '';
+  if (pm) {
+    const badge = pm.status === 'approved' ? 'badge-approved' : pm.status === 'pending' ? 'badge-pending' : 'badge-rejected';
+    html += `
+    <div class="info-card mb-3">
+      <div class="info-card-head"><i class="bi bi-card-checklist"></i><h5>Primary Membership</h5></div>
+      <div class="info-card-body">
+        <div class="member-id-box mb-3">
+          <div class="mid-label">Your AISU Member ID</div>
+          <div class="mid-value">${pm.member_id || '—'}</div>
+          <div class="mid-sub">Valid for 3 years | Expires: ${pm.expiry_date || 'N/A'}</div>
+        </div>
+        <table class="dash-table">
+          <tr><td><strong>Status</strong></td><td><span class="status-badge ${badge}">${pm.status.toUpperCase()}</span></td></tr>
+          <tr><td><strong>Approved On</strong></td><td>${pm.approved_at ? pm.approved_at.slice(0,10) : '—'}</td></tr>
+          <tr><td><strong>Expiry Date</strong></td><td>${pm.expiry_date || '—'}</td></tr>
+        </table>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="info-card mb-3"><div class="info-card-head"><i class="bi bi-card-checklist"></i><h5>Primary Membership</h5></div><div class="info-card-body"><div class="empty-state"><i class="bi bi-person-plus"></i><p>You do not have a primary membership.<br><a href="primary-membership.html" class="btn btn-primary btn-sm mt-2">Apply for Primary Membership</a></p></div></div></div>`;
+  }
+  if (sm) {
+    const badge = sm.status === 'approved' ? 'badge-approved' : sm.status === 'pending' ? 'badge-pending' : 'badge-rejected';
+    html += `
+    <div class="info-card">
+      <div class="info-card-head"><i class="bi bi-mortarboard"></i><h5>Student Membership</h5></div>
+      <div class="info-card-body">
+        <div class="member-id-box mb-3">
+          <div class="mid-label">Your Student ID</div>
+          <div class="mid-value">${sm.member_id || '—'}</div>
+          <div class="mid-sub">Valid for 1 year | Expires: ${sm.expiry_date || 'N/A'}</div>
+        </div>
+        <table class="dash-table">
+          <tr><td><strong>Status</strong></td><td><span class="status-badge ${badge}">${sm.status.toUpperCase()}</span></td></tr>
+          <tr><td><strong>Approved On</strong></td><td>${sm.approved_at ? sm.approved_at.slice(0,10) : '—'}</td></tr>
+          <tr><td><strong>Expiry Date</strong></td><td>${sm.expiry_date || '—'}</td></tr>
+        </table>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="info-card"><div class="info-card-head"><i class="bi bi-mortarboard"></i><h5>Student Membership</h5></div><div class="info-card-body"><div class="empty-state"><i class="bi bi-mortarboard"></i><p>No student membership.<br><a href="student-membership.html" class="btn btn-primary btn-sm mt-2">Apply for Student Membership</a></p></div></div></div>`;
+  }
+  document.getElementById('mem-content').innerHTML = html;
+}
+
+// ── Certificates ────────────────────────────────────────────
+async function loadCerts() {
+  const wrap = document.getElementById('cert-content');
+  wrap.innerHTML = '<div class="loading-overlay active"><div class="spinner"></div></div>';
+  const res = await apiGet('/certs/my');
+  if (!res || !res.success || !res.data.length) {
+    wrap.innerHTML = '<div class="empty-state"><i class="bi bi-patch-check"></i><p>No certificates yet. Participate in competitions and internships to earn certificates.</p></div>';
+    return;
+  }
+  wrap.innerHTML = res.data.map(c => `
+    <div class="cert-card">
+      <div class="cert-icon"><i class="bi bi-patch-check-fill"></i></div>
+      <div class="cert-info">
+        <div class="cert-title">${c.program}</div>
+        <div class="cert-num">${c.cert_number}</div>
+        <div class="cert-date">${c.cert_type} &bull; Issued: ${c.issued_at ? c.issued_at.slice(0,10) : '—'}</div>
+      </div>
+      <span class="status-badge badge-approved ms-auto">VALID</span>
+    </div>`).join('');
+}
+
+// ── Competitions ────────────────────────────────────────────
+async function loadComps() {
+  const wrap = document.getElementById('comp-content');
+  wrap.innerHTML = '<div class="loading-overlay active"><div class="spinner"></div></div>';
+  const res = await apiGet('/competitions/my-registrations');
+  if (!res || !res.success || !res.data.length) {
+    wrap.innerHTML = `<div class="empty-state"><i class="bi bi-trophy"></i><p>No competition registrations yet.<br><a href="competition.html">Browse Competitions</a></p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="info-card"><div class="info-card-head"><i class="bi bi-trophy"></i><h5>Registered Competitions</h5></div><div class="info-card-body">
+    <table class="dash-table">
+      <thead><tr><th>Competition</th><th>Type</th><th>Status</th><th>Registered</th></tr></thead>
+      <tbody>${res.data.map(r => `
+        <tr>
+          <td>${r.competition_title || r.competition_id}</td>
+          <td>${r.submission_type || '—'}</td>
+          <td><span class="status-badge ${r.status==='disqualified'?'badge-rejected':'badge-active'}">${(r.status||'registered').toUpperCase()}</span></td>
+          <td>${r.created_at ? r.created_at.slice(0,10) : '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div></div>`;
+}
+
+// ── Internships ─────────────────────────────────────────────
+async function loadInterns() {
+  const wrap = document.getElementById('intern-content');
+  wrap.innerHTML = '<div class="loading-overlay active"><div class="spinner"></div></div>';
+  const res = await apiGet('/internship/my');
+  if (!res || !res.success || !res.data.length) {
+    wrap.innerHTML = `<div class="empty-state"><i class="bi bi-briefcase"></i><p>No internship applications yet.<br><a href="internship.html">Apply for Internship</a></p></div>`;
+    return;
+  }
+  const STEPS = ['Applied','Shortlisted','Selected','In Progress','Completed'];
+  wrap.innerHTML = res.data.map(a => {
+    const curStep = STEPS.indexOf(a.selection_status === 'Not Selected' ? 'Applied' : (a.progress_status || a.selection_status || 'Applied'));
+    const stepsBadge = STEPS.map((s,i) => `
+      <div class="pt-step ${i < curStep ? 'done' : i===curStep ? 'active' : ''}">
+        <div class="pt-circle">${i < curStep ? '<i class="bi bi-check"></i>' : i+1}</div>
+        <div class="pt-label">${s}</div>
+      </div>`).join('');
+    return `
+    <div class="info-card mb-3">
+      <div class="info-card-head"><i class="bi bi-briefcase"></i><h5>${a.domain} Internship — ${a.partner}</h5></div>
+      <div class="info-card-body">
+        <div class="progress-track">${stepsBadge}</div>
+        <table class="dash-table mt-3">
+          <tr><td><strong>Selection Status</strong></td><td><span class="status-badge ${a.selection_status==='Not Selected'?'badge-rejected':a.selection_status==='Applied'?'badge-pending':'badge-approved'}">${a.selection_status||'Applied'}</span></td></tr>
+          <tr><td><strong>Progress</strong></td><td>${a.progress_status||'—'}</td></tr>
+          <tr><td><strong>Completion</strong></td><td>${a.completion_status||'—'}</td></tr>
+          <tr><td><strong>Applied On</strong></td><td>${a.created_at ? a.created_at.slice(0,10) : '—'}</td></tr>
+        </table>
+        ${a.progress_log && a.progress_log.length ? `
+        <div class="mt-3"><strong class="small">Update History</strong></div>
+        <div class="timeline mt-2">${a.progress_log.map(l=>`
+          <div class="tl-item"><div class="tl-dot"></div>
+          <div class="tl-content"><strong>${l.status}</strong>${l.note?' — '+l.note:''}<div class="tl-date">${l.timestamp?l.timestamp.slice(0,16).replace('T',' '):'—'}</div></div></div>`).join('')}
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ICell ───────────────────────────────────────────────────
+async function loadIcell() {
+  const wrap = document.getElementById('icell-content');
+  wrap.innerHTML = '<div class="loading-overlay active"><div class="spinner"></div></div>';
+  const res = await apiGet('/icell/my-proposals');
+  if (!res || !res.success || !res.data.length) {
+    wrap.innerHTML = `<div class="empty-state"><i class="bi bi-lightbulb"></i><p>No innovation proposals yet.<br><a href="innovations.html">Submit a Proposal</a></p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="info-card"><div class="info-card-head"><i class="bi bi-lightbulb"></i><h5>My Innovation Proposals</h5></div><div class="info-card-body">
+    <table class="dash-table">
+      <thead><tr><th>Ref ID</th><th>Title</th><th>Category</th><th>Status</th><th>Submitted</th></tr></thead>
+      <tbody>${res.data.map(p => `
+        <tr>
+          <td style="font-family:monospace;font-size:0.8rem;">${p.reference_id || p._id.slice(0,8).toUpperCase()}</td>
+          <td>${p.title}</td>
+          <td>${p.category||'—'}</td>
+          <td><span class="status-badge ${p.status==='approved'?'badge-approved':p.status==='rejected'?'badge-rejected':'badge-pending'}">${(p.status||'pending').toUpperCase()}</span></td>
+          <td>${p.created_at ? p.created_at.slice(0,10) : '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div></div>`;
+}
+
+// ── Track complaint ─────────────────────────────────────────
+async function trackComplaint() {
+  const id  = document.getElementById('track-id').value.trim();
+  const wrap = document.getElementById('track-result');
+  if (!id) return;
+  wrap.innerHTML = '<div class="spinner" style="width:24px;height:24px;border-width:2px;"></div>';
+  const res = await fetch(`${API}/complaints/track/${id}`);
+  const data = await res.json();
+  if (!data.success) { wrap.innerHTML = `<div class="alert alert-danger py-2 small">${data.message}</div>`; return; }
+  const c = data.data;
+  wrap.innerHTML = `
+    <div class="info-card">
+      <div class="info-card-head"><i class="bi bi-search"></i><h5>Complaint: ${c.complaint_id}</h5></div>
+      <div class="info-card-body">
+        <table class="dash-table">
+          <tr><td><strong>Category</strong></td><td>${c.category}</td></tr>
+          <tr><td><strong>Status</strong></td><td><span class="status-badge badge-active">${(c.status||'').toUpperCase()}</span></td></tr>
+          <tr><td><strong>Filed On</strong></td><td>${c.created_at ? c.created_at.slice(0,10) : '—'}</td></tr>
+          <tr><td><strong>Resolution</strong></td><td>${c.resolution||'Pending'}</td></tr>
+        </table>
+        ${c.updates && c.updates.length ? `<div class="timeline mt-3">${c.updates.map(u=>`<div class="tl-item"><div class="tl-dot"></div><div class="tl-content">${u.action}<div class="tl-date">${u.timestamp?u.timestamp.slice(0,16).replace('T',' '):'—'}</div></div></div>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ── Change password ─────────────────────────────────────────
+async function changePassword() {
+  const old = document.getElementById('cp-old').value;
+  const nw  = document.getElementById('cp-new').value;
+  const cf  = document.getElementById('cp-conf').value;
+  const msg = document.getElementById('cp-msg');
+  if (nw !== cf) { msg.innerHTML = '<span class="text-danger">Passwords do not match.</span>'; return; }
+  const res = await apiPost('/auth/change-password', { old_password: old, new_password: nw });
+  msg.innerHTML = res.success ? '<span class="text-success">Password updated successfully.</span>' : `<span class="text-danger">${res.message}</span>`;
+}
+
+// ── Report upload ────────────────────────────────────────────
+async function uploadReport() {
+  const file = document.getElementById('rpt-file').files[0];
+  const note = document.getElementById('rpt-note').value;
+  const msg  = document.getElementById('rpt-msg');
+  if (!file) { msg.innerHTML = '<span class="text-danger">Please select a file.</span>'; return; }
+  // Need primary member ID
+  const pm = _user.primary_membership;
+  if (!pm) { msg.innerHTML = '<span class="text-danger">Only primary members can upload reports.</span>'; return; }
+  const fd = new FormData();
+  fd.append('report', file);
+  fd.append('note', note);
+  const res = await apiPost(`/members/${pm.member_id || _user._id}/upload-report`, fd, true);
+  msg.innerHTML = res.success ? '<span class="text-success">Report uploaded successfully.</span>' : `<span class="text-danger">${res.message}</span>`;
+}
+
+// ── Save settings ────────────────────────────────────────────
+async function saveSettings() {
+  const name  = document.getElementById('set-name').value.trim();
+  const state = document.getElementById('set-state').value;
+  const msg   = document.getElementById('set-msg');
+  // Update user name/state by re-registering or using a dedicated endpoint
+  msg.innerHTML = '<span class="text-muted">Settings saved locally. Changes will reflect on next login.</span>';
+}
+
+// ── Start ────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

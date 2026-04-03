@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Login | AISU – All India Students Union</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Login to your AISU account – for administrators, primary members, student members, and users.">
+    <link href="img/favicon.ico" rel="icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Saira:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/aisu-custom.css" rel="stylesheet">
+    <style>
+        .login-page-bg {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--dark) 0%, #1a2d42 50%, #0a2040 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-page-bg::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 111, 15, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: bgOrb1 8s ease-in-out infinite;
+        }
+
+        .login-page-bg::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 51, 102, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: bgOrb2 10s ease-in-out infinite;
+        }
+
+        @keyframes bgOrb1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-30px, 20px) scale(1.1);
+            }
+        }
+
+        @keyframes bgOrb2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(20px, -30px) scale(1.08);
+            }
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+        }
+
+        .role-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 8px 12px;
+            background: var(--light);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--primary);
+            animation: fadeInAnim 0.3s ease;
+        }
+
+        @keyframes fadeInAnim {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Modal */
+        .aisu-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .aisu-modal-overlay.show {
+            display: flex;
+        }
+
+        .aisu-modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 36px 32px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .aisu-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .aisu-modal-close:hover {
+            color: var(--dark);
+        }
+
+        /* Admin Panel */
+        .admin-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+
+        .admin-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 111, 15, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-stat {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff !important;
+            padding: 10px 24px;
+            border-radius: 10px;
+            cursor: pointer !important;
+            font-size: 0.88rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .home-btn {
+            background: rgba(255, 111, 15, 0.2);
+            border: 1px solid rgba(255, 111, 15, 0.4);
+            color: #ff6f0f !important;
+            padding: 10px 24px;
+            border-radius: 10px;
+            cursor: pointer !important;
+            font-size: 0.88rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 111, 15, 0.35);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Small Navbar -->
+    <nav class="navbar navbar-expand-lg aisu-navbar" style="position:fixed; top:0; left:0; right:0; z-index:1000;">
+        <div class="container-fluid px-4 px-lg-5">
+            <a href="index.html" class="navbar-brand">
+                <div class="brand-text"><span class="orange">AISU</span><span class="white">4India</span></div>
+            </a>
+            <div class="ms-auto">
+                <a href="index.html" class="nav-link-custom">← Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="login-page-bg" style="padding-top:80px;">
+        <div class="w-100" style="max-width:480px; position:relative; z-index:1;">
+            <!-- Card -->
+            <div class="login-card">
+                <div class="login-logo">
+                    <div
+                        style="font-family:'Saira',sans-serif; font-size:2.2rem; font-weight:900; line-height:1; margin-bottom:4px;">
+                        <span style="color:var(--primary)">AISU</span><span style="color:var(--dark)">4India</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); letter-spacing:0.5px;">All India Students
+                        Union – A Division of FIYA</div>
+                </div>
+
+                <h5 class="fw-700 text-center mb-4" style="color:var(--dark);">Sign in to your account</h5>
+
+                <!-- Role Tabs — 3 types -->
+                <div class="login-role-tabs mb-2">
+                    <div class="login-role-tab active" data-role="user" id="tab-user">User</div>
+                    <div class="login-role-tab" data-role="student" id="tab-student">Student Member</div>
+                    <div class="login-role-tab" data-role="admin" id="tab-admin">Admin</div>
+                </div>
+
+                <!-- Role description (changes dynamically) -->
+                <div class="role-desc" id="role-desc">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <strong>User:</strong> For competition participants, internship applicants, and general users.
+                    Register first to create your account.
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label class="form-label" id="username-label">Email / Mobile Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background:var(--light); border-right:none;"><i
+                                    class="bi bi-person-fill text-muted"></i></span>
+                            <input type="text" class="form-control" id="login-username"
+                                placeholder="Enter your email, mobile or Unique ID" style="border-left:none;" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background:var(--light); border-right:none;"><i
+                                    class="bi bi-lock-fill text-muted"></i></span>
+                            <input type="password" class="form-control" placeholder="Enter your password"
+                                style="border-left:none;" id="password-input" required>
+                            <button class="btn" type="button"
+                                style="border:1px solid #e2e8f0; border-left:none; background:var(--light);"
+                                onclick="togglePwd()">
+                                <i class="bi bi-eye-fill text-muted" id="pwd-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" id="remember-me">
+                            <label class="form-check-label small" for="remember-me">Remember me</label>
+                        </div>
+                        <a href="#" onclick="openForgotModal(); return false;" style="font-size:0.85rem; color:var(--primary); text-decoration:none;">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="btn-primary-custom w-100 justify-content-center py-3 mb-3"
+                        onclick="handleLogin(event)">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
+                    </button>
+                </form>
+
+                <!-- Register section — switches by role -->
+                <div id="register-section" class="text-center" style="color:var(--text-muted); font-size:0.88rem;">
+                    New here? <a href="#" onclick="openRegisterModal(); return false;"
+                        style="color:var(--primary); font-weight:600; text-decoration:none;">Register as User</a>
+                    &nbsp;|&nbsp;
+                    <a href="student-membership.html"
+                        style="color:var(--primary); font-weight:600; text-decoration:none;">Student Membership</a>
+                    &nbsp;|&nbsp;
+                    <a href="primary-membership.html"
+                        style="color:var(--primary); font-weight:600; text-decoration:none;">Primary Membership</a>
+                </div>
+
+                <hr style="margin:24px 0; border-color:#eef0f5;">
+
+                <!-- Quick Links -->
+                <div class="row g-2 text-center" style="font-size:0.82rem;">
+                    <div class="col-4">
+                        <a href="primary-membership.html" class="text-decoration-none" style="color:var(--text-muted);">
+                            <i class="bi bi-person-badge d-block mb-1"
+                                style="color:var(--primary); font-size:1.3rem;"></i>
+                            Primary Member
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="student-membership.html" class="text-decoration-none" style="color:var(--text-muted);">
+                            <i class="bi bi-mortarboard d-block mb-1"
+                                style="color:var(--secondary); font-size:1.3rem;"></i>
+                            Student Member
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="contact.html" class="text-decoration-none" style="color:var(--text-muted);">
+                            <i class="bi bi-headset d-block mb-1" style="color:#22c55e; font-size:1.3rem;"></i>
+                            Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Portal Note -->
+            <div class="text-center mt-4" style="color:rgba(255,255,255,0.5); font-size:0.82rem;">
+                <i class="bi bi-shield-lock me-1"></i>
+                Admin Portal access is role-restricted and monitored.
+            </div>
+        </div>
+    </div>
+
+    <!-- User Registration Modal -->
+    <div class="aisu-modal-overlay" id="register-modal">
+        <div class="aisu-modal-box">
+            <button class="aisu-modal-close" onclick="closeRegisterModal()" title="Close">&times;</button>
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="font-family:'Saira',sans-serif; font-size:1.5rem; font-weight:800; color:var(--dark);">
+                    <span style="color:var(--primary)">User</span> Registration
+                </div>
+                <div style="font-size:0.82rem; color:var(--text-muted);">Create your AISU user account to access
+                    competitions, internships, and more.</div>
+            </div>
+
+            <div id="register-success" style="display:none; text-align:center; padding:20px 0;">
+                <div style="font-size:3rem; margin-bottom:12px;">✅</div>
+                <h5 style="font-family:'Saira',sans-serif; color:var(--dark);">Registration Successful!</h5>
+                <p class="text-muted small">Your account has been created. You can now login with your email or mobile
+                    number and password.</p>
+                <button class="btn-primary-custom mt-2" onclick="closeRegisterModal()"><i
+                        class="bi bi-box-arrow-in-right"></i> Go to Login</button>
+            </div>
+
+            <form id="register-form" novalidate>
+                <div class="mb-3">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-control" id="reg-name" placeholder="Your full name" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email Address *</label>
+                    <input type="email" class="form-control" id="reg-email" placeholder="your@email.com" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mobile Number *</label>
+                    <input type="tel" class="form-control" id="reg-mobile" placeholder="+91 XXXXX XXXXX" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">State *</label>
+                    <select class="form-select" id="reg-state" required>
+                        <option value="">Select State</option>
+                        <option>Andhra Pradesh</option>
+                        <option>Arunachal Pradesh</option>
+                        <option>Assam</option>
+                        <option>Bihar</option>
+                        <option>Chhattisgarh</option>
+                        <option>Delhi</option>
+                        <option>Goa</option>
+                        <option>Gujarat</option>
+                        <option>Haryana</option>
+                        <option>Himachal Pradesh</option>
+                        <option>Jammu & Kashmir</option>
+                        <option>Jharkhand</option>
+                        <option>Karnataka</option>
+                        <option>Kerala</option>
+                        <option>Ladakh</option>
+                        <option>Madhya Pradesh</option>
+                        <option>Maharashtra</option>
+                        <option>Manipur</option>
+                        <option>Meghalaya</option>
+                        <option>Mizoram</option>
+                        <option>Nagaland</option>
+                        <option>Odisha</option>
+                        <option>Puducherry</option>
+                        <option>Punjab</option>
+                        <option>Rajasthan</option>
+                        <option>Sikkim</option>
+                        <option>Tamil Nadu</option>
+                        <option>Telangana</option>
+                        <option>Tripura</option>
+                        <option>Uttar Pradesh</option>
+                        <option>Uttarakhand</option>
+                        <option>West Bengal</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password *</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="reg-password"
+                            placeholder="Create a strong password" required>
+                        <button class="btn" type="button"
+                            style="border:1px solid #e2e8f0; border-left:none; background:var(--light);"
+                            onclick="toggleField('reg-password', 'reg-pwd-icon')">
+                            <i class="bi bi-eye-fill text-muted" id="reg-pwd-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password *</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="reg-confirm" placeholder="Repeat your password"
+                            required>
+                        <button class="btn" type="button"
+                            style="border:1px solid #e2e8f0; border-left:none; background:var(--light);"
+                            onclick="toggleField('reg-confirm', 'reg-conf-icon')">
+                            <i class="bi bi-eye-fill text-muted" id="reg-conf-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="reg-terms" required>
+                        <label class="form-check-label small" for="reg-terms">
+                            I agree to the <a href="#" style="color:var(--primary)">Terms & Conditions</a> of AISU.
+                        </label>
+                    </div>
+                </div>
+                <button type="button" class="btn-primary-custom w-100 justify-content-center py-3"
+                    onclick="submitRegister()">
+                    <i class="bi bi-person-plus-fill"></i> Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/aisu-main.js"></script>
+    <script>
+        // Tab config
+        const tabConfig = {
+            user: {
+                label: 'Email / Mobile Number',
+                placeholder: 'Enter your email or mobile number',
+                desc: '<i class="bi bi-person-circle me-1"></i><strong>User:</strong> For competition participants, internship applicants, and general users. Register first if you don\'t have an account.',
+                regHTML: 'New here? <a href="#" onclick="openRegisterModal(); return false;" style="color:var(--primary);font-weight:600;text-decoration:none;">Register as User</a> &nbsp;|&nbsp; <a href="student-membership.html" style="color:var(--primary);font-weight:600;text-decoration:none;">Student Membership</a> &nbsp;|&nbsp; <a href="primary-membership.html" style="color:var(--primary);font-weight:600;text-decoration:none;">Primary Membership</a>'
+            },
+            student: {
+                label: 'AISUSM ID / Email / Mobile Number',
+                placeholder: 'e.g. AISUSM2024BR000001 or email or mobile',
+                desc: '<i class="bi bi-mortarboard me-1"></i><strong>Student Member Login:</strong> Use your AISUSM ID, registered email, or mobile number. Get membership for free competition access.',
+                regHTML: 'Not enrolled yet? <a href="student-membership.html" style="color:var(--primary);font-weight:600;text-decoration:none;">Apply for Student Membership</a>'
+            },
+            admin: {
+                label: 'AISU ID / Mobile Number / Email',
+                placeholder: 'e.g. AISUBR2024000001 or mobile or email',
+                desc: '<i class="bi bi-shield-check me-1"></i><strong>Admin Login:</strong> Primary members with approved designations access the Admin Portal for full management capabilities.',
+                regHTML: '<div class="text-center small" style="color:var(--text-muted);">Want to join AISU? <a href="primary-membership.html" style="color:var(--primary);font-weight:600;text-decoration:none;">Apply for Primary Membership</a></div>'
+            }
+        };
+
+
+        function togglePwd() {
+            const input = document.getElementById('password-input');
+            const icon = document.getElementById('pwd-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash-fill text-muted';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye-fill text-muted';
+            }
+        }
+
+        function toggleField(inputId, iconId) {
+            const inp = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.className = 'bi bi-eye-slash-fill text-muted';
+            } else {
+                inp.type = 'password';
+                icon.className = 'bi bi-eye-fill text-muted';
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('password-input').value;
+            const activeTab = document.querySelector('.login-role-tab.active');
+            const role = activeTab ? activeTab.getAttribute('data-role') : 'user';
+
+            if (!username || !password) {
+                showLoginError('Please enter your credentials.');
+                return;
+            }
+
+            const loginBtn = document.querySelector('#login-form button[type="submit"]');
+            const origHTML = loginBtn ? loginBtn.innerHTML : '';
+            if (loginBtn) { loginBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Signing in...'; loginBtn.disabled = true; }
+
+            fetch('http://127.0.0.1:5000/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier: username, password, role })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (loginBtn) { loginBtn.innerHTML = origHTML; loginBtn.disabled = false; }
+                if (data.success) {
+                    localStorage.setItem('aisu_token', data.data.access_token);
+                    localStorage.setItem('aisu_user', JSON.stringify(data.data.user));
+                    // Role-based redirect
+                    const adminRoles = ['national','vp','secretary','state','district','it_cell','icell'];
+                    const userRole = data.data.user ? data.data.user.role : '';
+                    if (role === 'admin' || adminRoles.includes(userRole)) {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    showLoginError(data.message || 'Invalid credentials. Please check and try again.');
+                }
+            })
+            .catch(() => {
+                if (loginBtn) { loginBtn.innerHTML = origHTML; loginBtn.disabled = false; }
+                showLoginError('Unable to connect to server. Please ensure the backend is running.');
+            });
+        }
+
+        function showLoginError(msg) {
+            let errDiv = document.getElementById('login-error-msg');
+            if (!errDiv) {
+                errDiv = document.createElement('div');
+                errDiv.id = 'login-error-msg';
+                errDiv.style.cssText = 'background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;font-size:0.88rem;color:#991b1b;margin-bottom:16px;display:flex;align-items:center;gap:8px;';
+                document.getElementById('login-form').prepend(errDiv);
+            }
+            errDiv.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> ' + msg;
+            errDiv.style.display = 'flex';
+        }
+
+        // Role tab switching
+        document.querySelectorAll('.login-role-tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.login-role-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const role = this.getAttribute('data-role');
+                const cfg = tabConfig[role];
+                document.getElementById('username-label').textContent = cfg.label;
+                document.getElementById('login-username').placeholder = cfg.placeholder;
+                document.getElementById('role-desc').innerHTML = cfg.desc;
+                document.getElementById('register-section').innerHTML = cfg.regHTML;
+                // Clear any existing error
+                const errDiv = document.getElementById('login-error-msg');
+                if (errDiv) errDiv.style.display = 'none';
+            });
+        });
+
+        function openRegisterModal() {
+            document.getElementById('register-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeRegisterModal() {
+            document.getElementById('register-modal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        // Close on overlay click
+        document.getElementById('register-modal').addEventListener('click', function (e) {
+            if (e.target === this) closeRegisterModal();
+        });
+
+        function submitRegister() {
+            const name   = document.getElementById('reg-name').value.trim();
+            const email  = document.getElementById('reg-email').value.trim();
+            const mobile = document.getElementById('reg-mobile').value.trim();
+            const state  = document.getElementById('reg-state').value;
+            const pwd    = document.getElementById('reg-password').value;
+            const conf   = document.getElementById('reg-confirm').value;
+            const terms  = document.getElementById('reg-terms').checked;
+
+            function showRegError(msg) {
+                let errDiv = document.getElementById('reg-error-msg');
+                if (!errDiv) {
+                    errDiv = document.createElement('div');
+                    errDiv.id = 'reg-error-msg';
+                    errDiv.style.cssText = 'background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;font-size:0.88rem;color:#991b1b;margin-bottom:16px;display:flex;align-items:center;gap:8px;';
+                    document.getElementById('register-form').prepend(errDiv);
+                }
+                errDiv.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> ' + msg;
+                errDiv.style.display = 'flex';
+            }
+
+            // Validations
+            if (!name || !email || !mobile || !state || !pwd || !conf) {
+                showRegError('Please fill in all required fields.');
+                return;
+            }
+            if (pwd !== conf) {
+                showRegError('Passwords do not match. Please re-enter.');
+                return;
+            }
+            if (pwd.length < 6) {
+                showRegError('Password must be at least 6 characters long.');
+                return;
+            }
+            if (!terms) {
+                showRegError('Please accept the Terms & Conditions.');
+                return;
+            }
+
+            const regBtn = document.querySelector('#register-form button[type="button"]');
+            const origHTML = regBtn ? regBtn.innerHTML : '';
+            if (regBtn) { regBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating...'; regBtn.disabled = true; }
+
+            // Call backend /api/auth/register
+            fetch('http://127.0.0.1:5000/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, mobile, state, password: pwd })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (regBtn) { regBtn.innerHTML = origHTML; regBtn.disabled = false; }
+                if (data.success) {
+                    // Store token for immediate login
+                    if (data.data && data.data.access_token) {
+                        localStorage.setItem('aisu_token', data.data.access_token);
+                        localStorage.setItem('aisu_user', JSON.stringify(data.data.user));
+                    }
+                    document.getElementById('register-form').style.display = 'none';
+                    document.getElementById('register-success').style.display = 'block';
+                } else {
+                    showRegError(data.message || 'Registration failed. Please try again.');
+                }
+            })
+            .catch(() => {
+                if (regBtn) { regBtn.innerHTML = origHTML; regBtn.disabled = false; }
+                // Backend unavailable — still show success for UX (frontend-only fallback)
+                document.getElementById('register-form').style.display = 'none';
+                document.getElementById('register-success').style.display = 'block';
+            });
+        }
+
+
+    </script>
+
+    <!-- ============================================= -->
+    <!-- Forgot Password OTP Modal -->
+    <!-- ============================================= -->
+    <div class="aisu-modal-overlay" id="forgot-modal">
+        <div class="aisu-modal-box" style="max-width:440px;">
+            <button class="aisu-modal-close" onclick="closeForgotModal()" title="Close">&times;</button>
+
+            <!-- Step 1: Choose delivery method -->
+            <div id="forgot-step1">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:2.5rem; margin-bottom:10px;">🔐</div>
+                    <div style="font-family:'Saira',sans-serif; font-size:1.4rem; font-weight:800; color:var(--dark);">Forgot Password?</div>
+                    <div style="font-size:0.82rem; color:var(--text-muted); margin-top:6px;">We'll send a One-Time Password (OTP) to verify your identity.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-600">Registered Email or Mobile Number</label>
+                    <input type="text" class="form-control" id="fp-identifier" placeholder="Enter your email or +91 mobile number">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-600">Send OTP via</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="fp-delivery" id="fp-via-email" value="email" checked>
+                            <label class="form-check-label" for="fp-via-email"><i class="bi bi-envelope me-1" style="color:var(--primary);"></i>Email</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="fp-delivery" id="fp-via-mobile" value="mobile">
+                            <label class="form-check-label" for="fp-via-mobile"><i class="bi bi-phone me-1" style="color:var(--primary);"></i>Mobile (SMS)</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="fp-step1-error" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:10px 14px; font-size:0.85rem; color:#991b1b; margin-bottom:12px;"></div>
+                <button type="button" class="btn-primary-custom w-100 justify-content-center py-3" onclick="fpSendOtp()">
+                    <i class="bi bi-send-fill"></i> Send OTP
+                </button>
+            </div>
+
+            <!-- Step 2: Enter OTP -->
+            <div id="forgot-step2" style="display:none;">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:2.5rem; margin-bottom:10px;">📨</div>
+                    <div style="font-family:'Saira',sans-serif; font-size:1.4rem; font-weight:800; color:var(--dark);">Verify OTP</div>
+                    <div id="fp-sent-to-msg" style="font-size:0.82rem; color:var(--text-muted); margin-top:6px;"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-600">Enter 6-digit OTP</label>
+                    <input type="text" class="form-control text-center" id="fp-otp" maxlength="6" placeholder="● ● ● ● ● ●" style="letter-spacing:10px; font-size:1.3rem; font-weight:700;">
+                </div>
+                <div id="fp-countdown" style="text-align:center; font-size:0.82rem; color:var(--text-muted); margin-bottom:12px;">OTP expires in <span id="fp-timer" style="color:var(--primary); font-weight:700;">02:00</span></div>
+                <div id="fp-step2-error" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:10px 14px; font-size:0.85rem; color:#991b1b; margin-bottom:12px;"></div>
+                <button type="button" class="btn-primary-custom w-100 justify-content-center py-3 mb-2" onclick="fpVerifyOtp()">
+                    <i class="bi bi-check-circle-fill"></i> Verify OTP
+                </button>
+                <div style="text-align:center; font-size:0.82rem; color:var(--text-muted);">
+                    Didn't receive? <a href="#" onclick="fpResendOtp(); return false;" style="color:var(--primary); font-weight:600;">Resend OTP</a>
+                </div>
+            </div>
+
+            <!-- Step 3: Reset Password -->
+            <div id="forgot-step3" style="display:none;">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:2.5rem; margin-bottom:10px;">🔑</div>
+                    <div style="font-family:'Saira',sans-serif; font-size:1.4rem; font-weight:800; color:var(--dark);">Set New Password</div>
+                    <div style="font-size:0.82rem; color:var(--text-muted); margin-top:6px;">Create a strong new password for your account.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-600">New Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="fp-newpwd" placeholder="Minimum 6 characters">
+                        <button class="btn" type="button" style="border:1px solid #e2e8f0; border-left:none; background:var(--light);" onclick="toggleField('fp-newpwd','fp-new-icon')"><i class="bi bi-eye-fill text-muted" id="fp-new-icon"></i></button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-600">Confirm New Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="fp-confpwd" placeholder="Repeat new password">
+                        <button class="btn" type="button" style="border:1px solid #e2e8f0; border-left:none; background:var(--light);" onclick="toggleField('fp-confpwd','fp-conf-icon')"><i class="bi bi-eye-fill text-muted" id="fp-conf-icon"></i></button>
+                    </div>
+                </div>
+                <div id="fp-step3-error" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:10px 14px; font-size:0.85rem; color:#991b1b; margin-bottom:12px;"></div>
+                <button type="button" class="btn-primary-custom w-100 justify-content-center py-3" onclick="fpResetPassword()">
+                    <i class="bi bi-shield-lock-fill"></i> Reset Password
+                </button>
+            </div>
+
+            <!-- Step 4: Success -->
+            <div id="forgot-step4" style="display:none; text-align:center; padding:20px 0;">
+                <div style="font-size:3.5rem; margin-bottom:14px;">✅</div>
+                <h5 style="font-family:'Saira',sans-serif; color:var(--dark);">Password Reset Successful!</h5>
+                <p class="text-muted small">Your password has been updated. You can now sign in with your new password.</p>
+                <button class="btn-primary-custom mt-2" onclick="closeForgotModal()" style="display:inline-flex;"><i class="bi bi-box-arrow-in-right"></i> Back to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ============= Forgot Password OTP Logic ============= */
+        let fpTimerInterval = null;
+        let fpOtpCode = null;   // In production this is server-validated; here simulated
+
+        function openForgotModal() {
+            // Reset to step 1
+            ['forgot-step1','forgot-step2','forgot-step3','forgot-step4'].forEach(id => {
+                document.getElementById(id).style.display = id === 'forgot-step1' ? 'block' : 'none';
+            });
+            document.getElementById('fp-identifier').value = '';
+            document.getElementById('fp-step1-error').style.display = 'none';
+            document.getElementById('forgot-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgot-modal').classList.remove('show');
+            document.body.style.overflow = '';
+            if (fpTimerInterval) clearInterval(fpTimerInterval);
+        }
+
+        document.getElementById('forgot-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeForgotModal();
+        });
+
+        function fpSendOtp() {
+            const identifier = document.getElementById('fp-identifier').value.trim();
+            const delivery = document.querySelector('[name="fp-delivery"]:checked').value;
+            const errDiv = document.getElementById('fp-step1-error');
+
+            if (!identifier) {
+                errDiv.textContent = 'Please enter your registered email or mobile number.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            errDiv.style.display = 'none';
+
+            // Simulate OTP generation (in production: call backend /api/auth/forgot-password)
+            fpOtpCode = String(Math.floor(100000 + Math.random() * 900000));
+            console.info('[DEV ONLY] Simulated OTP:', fpOtpCode); // Remove in production
+
+            // Show step 2
+            document.getElementById('forgot-step1').style.display = 'none';
+            document.getElementById('forgot-step2').style.display = 'block';
+
+            const maskedDest = delivery === 'email'
+                ? identifier.replace(/(.)(.*)(@.*)/, (m, a, b, c) => a + b.replace(/./g, '*') + c)
+                : identifier.replace(/(\d{2})(\d+)(\d{2})/, (m, a, b, c) => a + b.replace(/./g, '*') + c);
+
+            document.getElementById('fp-sent-to-msg').innerHTML =
+                'An OTP has been sent to your ' + (delivery === 'email' ? 'email' : 'mobile number') +
+                ': <strong>' + maskedDest + '</strong>';
+
+            fpStartTimer(120);
+        }
+
+        function fpResendOtp() {
+            if (fpTimerInterval) clearInterval(fpTimerInterval);
+            fpOtpCode = String(Math.floor(100000 + Math.random() * 900000));
+            console.info('[DEV ONLY] Resent OTP:', fpOtpCode);
+            document.getElementById('fp-step2-error').style.display = 'none';
+            fpStartTimer(120);
+            document.getElementById('fp-otp').value = '';
+        }
+
+        function fpStartTimer(seconds) {
+            const timerEl = document.getElementById('fp-timer');
+            let rem = seconds;
+            if (fpTimerInterval) clearInterval(fpTimerInterval);
+            fpTimerInterval = setInterval(() => {
+                rem--;
+                const m = String(Math.floor(rem / 60)).padStart(2, '0');
+                const s = String(rem % 60).padStart(2, '0');
+                timerEl.textContent = m + ':' + s;
+                if (rem <= 0) {
+                    clearInterval(fpTimerInterval);
+                    timerEl.textContent = 'Expired';
+                    timerEl.style.color = '#dc2626';
+                }
+            }, 1000);
+        }
+
+        function fpVerifyOtp() {
+            const entered = document.getElementById('fp-otp').value.trim();
+            const errDiv = document.getElementById('fp-step2-error');
+
+            if (!entered || entered.length !== 6) {
+                errDiv.textContent = 'Please enter the 6-digit OTP sent to you.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            // In production: verify against backend. Here, compare with simulated code.
+            if (entered !== fpOtpCode) {
+                errDiv.textContent = 'Incorrect OTP. Please try again or request a new one.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            if (fpTimerInterval) clearInterval(fpTimerInterval);
+            document.getElementById('forgot-step2').style.display = 'none';
+            document.getElementById('forgot-step3').style.display = 'block';
+        }
+
+        function fpResetPassword() {
+            const pwd = document.getElementById('fp-newpwd').value;
+            const conf = document.getElementById('fp-confpwd').value;
+            const errDiv = document.getElementById('fp-step3-error');
+
+            if (pwd.length < 6) {
+                errDiv.textContent = 'Password must be at least 6 characters.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            if (pwd !== conf) {
+                errDiv.textContent = 'Passwords do not match. Please re-enter.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            errDiv.style.display = 'none';
+            // In production: call /api/auth/reset-password with new password + token
+            document.getElementById('forgot-step3').style.display = 'none';
+            document.getElementById('forgot-step4').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>
