@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - AISU Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-card h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            background: #f5f7fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; gap: 20px; align-items: center; margin-bottom: 30px;">
+            <a href="{% url 'manage_users' %}" class="btn">← Back to Dashboard</a>
+            <div>
+                <h1 style="margin: 0;">All India Students Union</h1>
+            </div>
+        </div>
+        <div class="form-card">
+            
+            <div class="user-info">
+                <strong>Username:</strong> {{ user.username }}<br>
+                <strong>User ID:</strong> {{ user.id }}
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="super_admin" {% if profile.role == 'super_admin' %}selected{% endif %}>Super Admin</option>
+                        <option value="it_team" {% if profile.role == 'it_team' %}selected{% endif %}>IT Team</option>
+                        <option value="state_team" {% if profile.role == 'state_team' %}selected{% endif %}>State Team</option>
+                        <option value="district_team" {% if profile.role == 'district_team' %}selected{% endif %}>District Team</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="state">State (optional)</label>
+                    <input type="text" id="state" name="state" value="{{ profile.state|default:'' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="district">District (optional)</label>
+                    <input type="text" id="district" name="district" value="{{ profile.district|default:'' }}">
+                </div>
+                
+                <div class="button-group">
+                    <a href="{% url 'manage_users' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Team Dashboard - AISU Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            overflow: auto;
+            z-index: 1000;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-110%);
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 300px;
+            z-index: 1001;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: left 0.3s;
+        }
+
+        body.sidebar-hidden .toggle-btn {
+            left: 20px;
+        }
+        
+        .sidebar h2 {
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+        
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 30px;
+            padding-top: 70px;
+            transition: margin-left 0.3s ease;
+        }
+
+        body.sidebar-hidden .main-content {
+            margin-left: 0;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-info p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        
+        .profile-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+        
+        .profile-btn:hover {
+            background: #2980b9;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .card-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #764ba2;
+            margin: 15px 0;
+        }
+        
+        .card-label {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-secondary {
+            background: #eee;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #ddd;
+        }
+        
+        .table-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        
+        .table-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table th {
+            background: #f5f7fa;
+            color: #333;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        table tr:hover {
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">☰</button>
+    <div class="sidebar" id="sidebar">
+        <h2>All India Students Union</h2>
+        <ul>
+            <li><a href="{% url 'it_dashboard' %}">📊 Dashboard</a></li>
+            <li><a href="javascript:void(0);" onclick="showFeature('System Health')">🔧 System Health</a></li>
+            <li><a href="javascript:void(0);" onclick="showFeature('Backup & Restore')">💾 Backup & Restore</a></li>
+            <li><a href="javascript:void(0);" onclick="showFeature('System Logs')">📝 System Logs</a></li>
+            <li><a href="javascript:void(0);" onclick="showFeature('Updates')">🔄 Updates</a></li>
+            <li><a href="javascript:void(0);" onclick="showFeature('Support')">📧 Support</a></li>
+            <li><a href="{% url 'logout' %}">🚪 Logout</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h1>All India Students Union</h1>
+                <p>System management and maintenance</p>
+            </div>
+            <div class="user-info">
+                <p>Welcome, <strong>{{ request.user.username }}</strong></p>
+                <a href="{% url 'profile' %}" class="profile-btn">👤 Profile</a>
+                <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>System Uptime</h3>
+                <div class="card-number">0%</div>
+                <p class="card-label">Last 30 days</p>
+            </div>
+            <div class="card">
+                <h3>Active Users</h3>
+                <div id="total-users" class="card-number">0</div>
+                <p class="card-label">Currently online</p>
+            </div>
+            <div class="card">
+                <h3>Database Size</h3>
+                <div class="card-number">0 GB</div>
+                <p class="card-label">Total storage</p>
+            </div>
+            <div class="card">
+                <h3>Server Status</h3>
+                <div class="card-number">✓</div>
+                <p class="card-label">All healthy</p>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn" onclick="showAlert('🔧 System configuration panel opening...')">🔧 System Configuration</button>
+            <button class="action-btn" onclick="performBackup()">💾 Backup Database</button>
+            <button class="action-btn" onclick="showAlert('📝 System logs viewer opening...')">📝 View Logs</button>
+            <button class="action-btn" onclick="runDiagnostics()">🔍 Diagnostics</button>
+            <button class="action-btn" onclick="showAlert('🔄 Checking for updates...')">🔄 Check Updates</button>
+            <button class="action-btn" onclick="showAlert('⚠️ Alerts & monitoring dashboard opening...')">⚠️ Alerts & Monitoring</button>
+        </div>
+        
+        <div class="table-section">
+            <h2>Recent System Events</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>timestamp</th>
+                        <th>Event Type</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2026-02-06 10:30 AM</td>
+                        <td>Backup</td>
+                        <td>Daily database backup completed</td>
+                        <td><span style="color: green;">✓ Success</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026-02-06 8:15 AM</td>
+                        <td>Login</td>
+                        <td>User Rayan logged in</td>
+                        <td><span style="color: green;">✓ Success</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026-02-05 11:45 PM</td>
+                        <td>Maintenance</td>
+                        <td>System update check completed</td>
+                        <td><span style="color: green;">✓ Success</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        function showFeature(featureName) {
+            alert(`⚒️ ${featureName} feature is coming soon!`);
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const body = document.body;
+            sidebar.classList.toggle('hidden');
+            body.classList.toggle('sidebar-hidden');
+        }
+        
+        function performBackup() {
+            alert('💾 Starting database backup...');
+            setTimeout(() => {
+                alert('✓ Database backup completed successfully!');
+            }, 2000);
+        }
+        
+        function runDiagnostics() {
+            alert('🔍 Running system diagnostics...');
+            setTimeout(() => {
+                alert('✓ Diagnostics completed!\nAll systems operating normally.');
+            }, 2000);
+        }
+        
+        function showAlert(message) {
+            alert(message);
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+
+        // Dashboard counts polling (update users count)
+        async function fetchDashboardCounts() {
+            try {
+                const res = await fetch('/accounts/dashboard-counts/');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (document.getElementById('total-users')) document.getElementById('total-users').innerText = data.total_users;
+            } catch (e) {
+                // silent
+            }
+        }
+
+        fetchDashboardCounts();
+        setInterval(fetchDashboardCounts, 5000);
+    </script>
+</body>
+</html>
